@@ -42,7 +42,8 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname
   const isAuthRoute = pathname === '/login' || pathname === '/signup'
-  const isPublicRoute = isAuthRoute || pathname.startsWith('/portfolio/') || pathname.startsWith('/api/')
+  const isPasswordRoute = pathname === '/forgot-password' || pathname === '/reset-password'
+  const isPublicRoute = isAuthRoute || isPasswordRoute || pathname.startsWith('/portfolio/') || pathname.startsWith('/api/')
   const isProtectedRoute = !isPublicRoute && pathname !== '/'
 
   // Redirect unauthenticated users away from protected routes
