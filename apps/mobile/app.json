@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Setter",
+    "slug": "setter",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "setter",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#7c3aed"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.setter.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#7c3aed"
+      },
+      "package": "com.setter.app"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store"
+    ]
+  }
+}
