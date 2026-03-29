@@ -13,3 +13,5 @@ android/
 *.xlsx
 *.pdf
 .claude/
+
+.vercel

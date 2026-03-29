@@ -44,7 +44,7 @@ async function handler() {
       grade_level: 9,
       sport: 'volleyball',
       position: 'setter',
-      college_target: 'Stanford or UCLA — interested in STEM and Law',
+      college_target: 'Stanford, UCLA, or UC Berkeley — interested in STEM and Law. Troy Tech magnet program, Class of 2029.',
     })
     .eq('id', userId)
 

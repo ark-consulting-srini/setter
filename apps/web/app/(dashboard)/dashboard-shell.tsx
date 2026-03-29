@@ -13,6 +13,8 @@ import {
   Menu,
   X,
   LogOut,
+  GraduationCap,
+  Target,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
@@ -20,11 +22,12 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 
 const NAV_ITEMS = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/tasks', label: 'Tasks', icon: CheckSquare },
-  { href: '/journal', label: 'Journal', icon: BookOpen },
-  { href: '/chat', label: 'Chat', icon: MessageCircle },
-  { href: '/achievements', label: 'Achievements', icon: Trophy },
+  { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
+  { href: '/tasks', label: 'Game Plan', icon: CheckSquare },
+  { href: '/journal', label: 'Playbook', icon: BookOpen },
+  { href: '/chat', label: 'Talk to Setter', icon: MessageCircle },
+  { href: '/achievements', label: 'Trophy Case', icon: Trophy },
+  { href: '/goals', label: 'Goals', icon: Target },
   { href: '/portfolio', label: 'Portfolio', icon: User },
 ] as const
 
@@ -66,11 +69,14 @@ export function DashboardShell({ userName, children }: DashboardShellProps) {
       >
         {/* Logo */}
         <div className="flex h-16 items-center justify-between px-6">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground text-sm font-bold">
+          <Link href="/dashboard" className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground text-sm font-black tracking-tight">
               S
             </div>
-            <span className="text-lg font-bold">Setter</span>
+            <div className="flex flex-col">
+              <span className="text-lg font-black leading-tight tracking-tight">Setter</span>
+              <span className="text-[10px] font-medium text-muted-foreground leading-tight">Troy Tech &apos;29</span>
+            </div>
           </Link>
           <Button
             variant="ghost"
@@ -84,7 +90,10 @@ export function DashboardShell({ userName, children }: DashboardShellProps) {
 
         {/* User greeting */}
         <div className="px-6 pb-4">
-          <p className="text-sm text-muted-foreground">Hey, {firstName}</p>
+          <div className="flex items-center gap-2">
+            <GraduationCap className="h-4 w-4 text-troy-gold" />
+            <p className="text-sm text-muted-foreground">Hey, {firstName}</p>
+          </div>
         </div>
 
         <Separator />
@@ -138,10 +147,10 @@ export function DashboardShell({ userName, children }: DashboardShellProps) {
             <Menu className="h-5 w-5" />
           </Button>
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground text-xs font-bold">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground text-xs font-black">
               S
             </div>
-            <span className="font-bold">Setter</span>
+            <span className="font-black tracking-tight">Setter</span>
           </div>
         </header>
 
