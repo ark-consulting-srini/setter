@@ -26,6 +26,120 @@ const SUBJECT_COLORS: Record<string, string> = {
   'Español 2': 'bg-rose-100 text-rose-700',
 }
 
+// Major topics by subject — AP curriculum aligned
+const SUBJECT_TOPICS: Record<string, string[]> = {
+  'AP World History': [
+    'Unit 1: The Global Tapestry (1200–1450)',
+    'Unit 2: Networks of Exchange (1200–1450)',
+    'Unit 3: Land-Based Empires (1450–1750)',
+    'Unit 4: Transoceanic Interconnections (1450–1750)',
+    'Unit 5: Revolutions (1750–1900)',
+    'Unit 6: Consequences of Industrialization (1750–1900)',
+    'Unit 7: Global Conflict (1900–present)',
+    'Unit 8: Cold War & Decolonization (1900–present)',
+    'Unit 9: Globalization (1900–present)',
+    'Mongol Empire',
+    'Ottoman Empire',
+    'Safavid Empire',
+    'Mughal Empire',
+    'Ming Dynasty',
+    'Columbian Exchange',
+    'Atlantic Slave Trade',
+    'French Revolution',
+    'Industrial Revolution',
+    'Imperialism & Colonialism',
+    'World War I',
+    'World War II',
+    'Japanese Authoritarianism',
+  ],
+  'Algebra 2': [
+    'Linear Equations & Inequalities',
+    'Systems of Equations',
+    'Quadratic Functions & Equations',
+    'Polynomials & Polynomial Functions',
+    'Radical Functions & Rational Exponents',
+    'Exponential & Logarithmic Functions',
+    'Rational Functions',
+    'Sequences & Series',
+    'Trigonometric Functions',
+    'Trigonometric Identities & Equations',
+    'Conic Sections',
+    'Probability & Statistics',
+    'Matrices',
+    'Complex Numbers',
+  ],
+  'Honors Bio 3': [
+    'Cell Structure & Function',
+    'Cell Transport & Homeostasis',
+    'Photosynthesis',
+    'Cellular Respiration',
+    'Cell Division (Mitosis & Meiosis)',
+    'DNA Structure & Replication',
+    'Protein Synthesis (Transcription & Translation)',
+    'Gene Expression & Regulation',
+    'Genetics & Heredity',
+    'Evolution & Natural Selection',
+    'Classification & Taxonomy',
+    'Ecology & Ecosystems',
+    'Population Ecology',
+    'Communities & Biomes',
+    'Human Body Systems',
+    'Enzyme Activity & Kinetics',
+  ],
+  'English Honors': [
+    'Literary Analysis & Close Reading',
+    'Rhetorical Analysis',
+    'Argumentative Writing',
+    'Narrative Writing',
+    'Poetry Analysis',
+    'Shakespeare',
+    'Novel Study & Themes',
+    'Grammar & Sentence Structure',
+    'Vocabulary in Context',
+    'Research & Citation (MLA)',
+    'Figurative Language & Literary Devices',
+    'Essay Structure & Thesis Writing',
+  ],
+  'AP CSP': [
+    'Unit 1: Creative Development',
+    'Unit 2: Data',
+    'Unit 3: Algorithms & Programming',
+    'Unit 4: Computer Systems & Networks',
+    'Unit 5: Impact of Computing',
+    'Big Idea: Abstraction',
+    'Big Idea: Data & Information',
+    'Big Idea: Algorithms',
+    'Big Idea: Programming',
+    'Big Idea: The Internet',
+    'Big Idea: Global Impact',
+    'Create Task Prep',
+    'Binary & Number Systems',
+    'Boolean Logic',
+    'Lists & Loops',
+    'Functions & Procedures',
+    'Cybersecurity',
+  ],
+  'Español 2': [
+    'Preterite Tense (Regular & Irregular)',
+    'Imperfect Tense',
+    'Preterite vs. Imperfect',
+    'Present Progressive',
+    'Reflexive Verbs',
+    'Direct & Indirect Object Pronouns',
+    'Commands (Informal & Formal)',
+    'Ser vs. Estar',
+    'Por vs. Para',
+    'Comparisons & Superlatives',
+    'Subjunctive Mood (Intro)',
+    'Vocabulary: Food & Restaurants',
+    'Vocabulary: Health & Body',
+    'Vocabulary: Travel & Transportation',
+    'Vocabulary: Daily Routines',
+    'Vocabulary: House & Chores',
+    'Culture: Spanish-Speaking Countries',
+  ],
+}
+
 const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
   flashcard: 'Flashcards',
   multiple_choice: 'Multiple Choice',
@@ -179,15 +293,42 @@ export default function QuizPage() {
                   <Label>Subject</Label>
                   <select
                     value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
+                    onChange={(e) => { setSubject(e.target.value); setTopic('') }}
                     className="w-full rounded-md border bg-background px-3 py-2 text-sm"
                   >
                     {ROMA_SUBJECTS.map((s) => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Topic (optional)</Label>
-                  <Input placeholder="e.g., Unit 5 Vocabulary" value={topic} onChange={(e) => setTopic(e.target.value)} />
+                  <Label>Topic</Label>
+                  {SUBJECT_TOPICS[subject] ? (
+                    <select
+                      value={topic}
+                      onChange={(e) => setTopic(e.target.value)}
+                      className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                    >
+                      <option value="">General review (all topics)</option>
+                      {SUBJECT_TOPICS[subject].map((t) => (
+                        <option key={t} value={t}>{t}</option>
+                      ))}
+                      <option value="__custom__">Custom topic...</option>
+                    </select>
+                  ) : (
+                    <Input placeholder="e.g., Unit 5 Vocabulary" value={topic} onChange={(e) => setTopic(e.target.value)} />
+                  )}
+                  {topic === '__custom__' && (
+                    <Input
+                      placeholder="Type your topic..."
+                      onChange={(e) => {
+                        if (e.target.value) setTopic(e.target.value)
+                      }}
+                      onBlur={(e) => {
+                        if (e.target.value) setTopic(e.target.value)
+                      }}
+                      className="mt-2"
+                      autoFocus
+                    />
+                  )}
                 </div>
               </div>
 
