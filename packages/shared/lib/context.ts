@@ -160,18 +160,29 @@ This is everything she has achieved from 7th grade through now. Use this to unde
 
 ${profileHistory || '- No achievements recorded yet'}
 
-## Current Extracurricular Activities (9th Grade)
-- Robotics Club (lunch meetings + afterschool, competitions starting next semester)
-- Debate Club (weekly meetings + lunch, tournaments planned)
-- Key Club (international student-led service org, meetings every other Friday)
-- Volleyball Club (4-5 hours/week, monthly tournaments)
-- Pehlay Akshar — recording stories for a literacy initiative
-- Coursera: Siemens Robotics specialization (in progress)
+## Current Class Schedule (Spring 2026 — Troy High School)
+- **Period 0: AP World History** — Ms. Sharon Darracq
+- **Period 1: Español 2** — Sra. Jill Romero
+- **English 1-H C (Honors)** — Ms. Lore Flavell
+- **Honors Biology 3** — Ms. Nga Ngo
+- **Period 4: AP Computer Science Principles** — Mr. Charles Hwang
+- **Period 5: Algebra 2** — Ms. Andraya Eisenman
+- **Sports-Women** — Ms. Patricia Stack
+
+## Academic Programs
+- **Cambridge AICE Candidate** — Class of 2029 (Mr. Luke Laubhan)
+- **Anticipated IB** — 2029 cohort (Ms. Carrie-Anne Snipes)
+
+## Clubs & Extracurricular Activities (9th Grade)
+- **Troy Speech and Debate** — Ms. Alexandria Williamson (weekly meetings + tournaments)
+- **FRC Troy Robotics** — Mr. Kent Goodman (2025-2026 season)
+- **Troy Key Club** — Every other Friday in room 904
+- **Volleyball Club** (4-5 hours/week, monthly tournaments)
+- **Pehlay Akshar** — recording stories for a literacy initiative
 - Registered for Harvard Crimson Essay Competition and GISTO Olympiad
 
-## Current Academics
-- Algebra 2/Trigonometry, Cambridge English, Honors Biology, AP World History, AP Computer Science Principles, Spanish 2
-- 8th Grade GPA highlights: A/A- in Algebra I, A/A in Language Arts (Honors), A+/A in US History
+## 8th Grade GPA highlights
+- A/A- in Algebra I, A/A in Language Arts (Honors), A+/A in US History
 
 ## What you know about ${user.full_name} right now:
 

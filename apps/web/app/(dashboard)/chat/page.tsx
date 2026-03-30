@@ -41,21 +41,21 @@ interface ChatSession {
 }
 
 const SUBJECT_PROMPTS = [
-  { icon: Calculator, label: 'Math', prompt: 'Help me understand ', color: 'bg-blue-100 text-blue-700' },
-  { icon: FlaskConical, label: 'Science', prompt: 'Explain this science concept: ', color: 'bg-green-100 text-green-700' },
-  { icon: BookOpen, label: 'English', prompt: 'Help me with my English assignment: ', color: 'bg-purple-100 text-purple-700' },
-  { icon: Globe, label: 'History', prompt: 'Help me study for history: ', color: 'bg-amber-100 text-amber-700' },
-  { icon: Code, label: 'CS / Code', prompt: 'Help me with my computer science work: ', color: 'bg-cyan-100 text-cyan-700' },
-  { icon: GraduationCap, label: 'College Prep', prompt: 'Help me prepare for college: ', color: 'bg-rose-100 text-rose-700' },
+  { icon: Globe, label: 'AP World', prompt: 'Help me with AP World History (Ms. Darracq): ', color: 'bg-amber-100 text-amber-700' },
+  { icon: Calculator, label: 'Algebra 2', prompt: 'Help me with Algebra 2 (Ms. Eisenman): ', color: 'bg-blue-100 text-blue-700' },
+  { icon: FlaskConical, label: 'Honors Bio', prompt: 'Help me with Honors Biology (Ms. Ngo): ', color: 'bg-green-100 text-green-700' },
+  { icon: BookOpen, label: 'English', prompt: 'Help me with English Honors (Ms. Flavell): ', color: 'bg-purple-100 text-purple-700' },
+  { icon: Code, label: 'AP CSP', prompt: 'Help me with AP Computer Science Principles (Mr. Hwang): ', color: 'bg-cyan-100 text-cyan-700' },
+  { icon: GraduationCap, label: 'Español 2', prompt: 'Help me with Spanish 2 (Sra. Romero): ', color: 'bg-rose-100 text-rose-700' },
 ]
 
 const QUICK_STARTERS = [
-  "Help me study for my AP World History exam",
-  "Explain quadratic equations step by step",
-  "Review my essay outline and give feedback",
-  "What STEM competitions should I enter next?",
-  "Help me plan my week — I have a lot due",
-  "Quiz me on biology vocabulary",
+  "Help me study for my AP World History exam on Japanese Authoritarianism",
+  "Explain trigonometric identities step by step for Algebra 2",
+  "Quiz me on Honors Bio 3 vocabulary",
+  "Review my English essay outline and give feedback",
+  "Help me with my AP CSP coding assignment",
+  "Prep me for the next Speech and Debate tournament",
 ]
 
 export default function ChatPage() {

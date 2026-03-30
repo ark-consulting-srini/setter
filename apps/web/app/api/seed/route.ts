@@ -59,35 +59,35 @@ async function handler() {
     { user_id: userId, title: 'Complete AP World History with an A', description: 'Unit 2 exam coming up — focus on Networks of Exchange', goal_type: 'academic', status: 'active', target_date: '2026-06-15', progress_pct: 40 },
     { user_id: userId, title: 'Build a community service portfolio', description: 'Volunteer at local food bank and Pehlay Akshar story recordings', goal_type: 'personal', status: 'active', target_date: '2027-01-01', progress_pct: 15 },
     { user_id: userId, title: 'Make varsity volleyball', description: 'Train hard this off-season, improve serve receive and setting consistency', goal_type: 'athletic', status: 'active', target_date: '2026-09-01', progress_pct: 30 },
-    { user_id: userId, title: 'Complete Siemens Robotics Coursera course', description: 'Robotics specialization by University of Colorado Boulder — supports Robotics Club at school', goal_type: 'academic', status: 'active', target_date: '2026-06-01', progress_pct: 5 },
-    { user_id: userId, title: 'Prepare for AMC 10', description: 'Register and prep for AMC 10 in sophomore year — 4+ hours per week on math competition prep', goal_type: 'academic', status: 'active', target_date: '2026-11-01', progress_pct: 0 },
+    { user_id: userId, title: 'Excel in FRC Troy Robotics season', description: 'Contribute to FRC build season with Mr. Goodman — learn CAD, programming, and competition strategy', goal_type: 'academic', status: 'active', target_date: '2026-04-01', progress_pct: 20 },
+    { user_id: userId, title: 'Prepare for Cambridge AICE exams', description: 'Cambridge AICE candidate — prepare for AS/A Level assessments alongside IB track', goal_type: 'academic', status: 'active', target_date: '2026-06-01', progress_pct: 10 },
   ])
 
   // 3. Insert completed tasks
   const { error: completedTasksError } = await supabase.from('tasks').insert([
-    { user_id: userId, title: 'Read AP World History Ch. 12', category: 'school', priority: 'high', status: 'completed', due_date: dateDaysAgo(1), completed_at: daysAgo(1) },
-    { user_id: userId, title: 'Finish math problem set #14', category: 'school', priority: 'medium', status: 'completed', due_date: dateDaysAgo(1), completed_at: daysAgo(1) },
-    { user_id: userId, title: 'Practice setting drills — 30 min', category: 'athletic', priority: 'high', status: 'completed', due_date: dateDaysAgo(2), completed_at: daysAgo(2) },
-    { user_id: userId, title: 'Write English essay rough draft', category: 'school', priority: 'high', status: 'completed', due_date: dateDaysAgo(3), completed_at: daysAgo(3) },
-    { user_id: userId, title: 'Watch film on opponent serve patterns', category: 'athletic', priority: 'medium', status: 'completed', due_date: dateDaysAgo(3), completed_at: daysAgo(3) },
-    { user_id: userId, title: 'Complete Coursera: Intro to American Law', category: 'college_prep', priority: 'medium', status: 'completed', due_date: dateDaysAgo(4), completed_at: daysAgo(4) },
-    { user_id: userId, title: 'Read Atomic Habits and make presentation', category: 'personal', priority: 'medium', status: 'completed', due_date: dateDaysAgo(5), completed_at: daysAgo(5) },
+    { user_id: userId, title: 'AP World History — Article Questions: Japanese Authoritarianism', category: 'school', priority: 'high', status: 'completed', due_date: dateDaysAgo(1), completed_at: daysAgo(1) },
+    { user_id: userId, title: 'Algebra 2 — Trig identities practice set', category: 'school', priority: 'medium', status: 'completed', due_date: dateDaysAgo(1), completed_at: daysAgo(1) },
+    { user_id: userId, title: 'Volleyball club practice — 2 hours', category: 'athletic', priority: 'high', status: 'completed', due_date: dateDaysAgo(2), completed_at: daysAgo(2) },
+    { user_id: userId, title: 'English Honors — Essay rough draft (Ms. Flavell)', category: 'school', priority: 'high', status: 'completed', due_date: dateDaysAgo(3), completed_at: daysAgo(3) },
+    { user_id: userId, title: 'Honors Bio 3 — Lab report on cell respiration', category: 'school', priority: 'high', status: 'completed', due_date: dateDaysAgo(3), completed_at: daysAgo(3) },
+    { user_id: userId, title: 'AP CSP — Code.org App Lab project', category: 'school', priority: 'medium', status: 'completed', due_date: dateDaysAgo(4), completed_at: daysAgo(4) },
+    { user_id: userId, title: 'Speech and Debate — Prep for tournament', category: 'extracurricular', priority: 'medium', status: 'completed', due_date: dateDaysAgo(5), completed_at: daysAgo(5) },
     { user_id: userId, title: 'Record 5 stories for Pehlay Akshar', category: 'extracurricular', priority: 'low', status: 'completed', due_date: dateDaysAgo(6), completed_at: daysAgo(6) },
   ])
 
   // 4. Insert pending tasks
   const { error: pendingTasksError } = await supabase.from('tasks').insert([
-    { user_id: userId, title: 'Study for AP World Unit 2 exam', category: 'school', priority: 'high', status: 'pending', due_date: today },
-    { user_id: userId, title: 'Practice jump serve — 20 reps', category: 'athletic', priority: 'high', status: 'pending', due_date: today },
-    { user_id: userId, title: 'Review college list with Dad', category: 'college_prep', priority: 'medium', status: 'pending', due_date: today },
-    { user_id: userId, title: 'Finish bio lab report', category: 'school', priority: 'high', status: 'pending', due_date: dateDaysFromNow(1) },
-    { user_id: userId, title: 'Start Siemens Robotics Coursera — Module 1', category: 'school', priority: 'medium', status: 'pending', due_date: dateDaysFromNow(2) },
-    { user_id: userId, title: 'Research 3 colleges with D1 volleyball', category: 'college_prep', priority: 'medium', status: 'pending', due_date: dateDaysFromNow(3) },
-    { user_id: userId, title: 'Read chapters 13-14 for AP World History', category: 'school', priority: 'medium', status: 'pending', due_date: dateDaysFromNow(4) },
-    { user_id: userId, title: 'Record 2 more stories for Pehlay Akshar', category: 'extracurricular', priority: 'low', status: 'pending', due_date: dateDaysFromNow(7) },
-    { user_id: userId, title: 'Prepare for Robotics Club competition', category: 'extracurricular', priority: 'medium', status: 'pending', due_date: dateDaysFromNow(14) },
-    { user_id: userId, title: 'Register for GISTO Olympiad (March 7)', category: 'college_prep', priority: 'high', status: 'pending', due_date: dateDaysFromNow(5) },
-    { user_id: userId, title: 'Work on Harvard Crimson essay draft', category: 'college_prep', priority: 'medium', status: 'pending', due_date: dateDaysFromNow(10) },
+    { user_id: userId, title: 'AP World History — Read Ch. 13-14 (Ms. Darracq)', category: 'school', priority: 'high', status: 'pending', due_date: today },
+    { user_id: userId, title: 'Español 2 — Vocab quiz prep (Sra. Romero)', category: 'school', priority: 'medium', status: 'pending', due_date: today },
+    { user_id: userId, title: 'Volleyball club practice', category: 'athletic', priority: 'high', status: 'pending', due_date: today },
+    { user_id: userId, title: 'Honors Bio 3 — Study for unit test (Ms. Ngo)', category: 'school', priority: 'high', status: 'pending', due_date: dateDaysFromNow(1) },
+    { user_id: userId, title: 'AP CSP — Finish Create Task prototype (Mr. Hwang)', category: 'school', priority: 'high', status: 'pending', due_date: dateDaysFromNow(2) },
+    { user_id: userId, title: 'Algebra 2 — Problem set on logarithms (Ms. Eisenman)', category: 'school', priority: 'medium', status: 'pending', due_date: dateDaysFromNow(3) },
+    { user_id: userId, title: 'English Honors — Finalize essay (Ms. Flavell)', category: 'school', priority: 'medium', status: 'pending', due_date: dateDaysFromNow(4) },
+    { user_id: userId, title: 'Troy Robotics — FRC build session (Mr. Goodman)', category: 'extracurricular', priority: 'medium', status: 'pending', due_date: dateDaysFromNow(5) },
+    { user_id: userId, title: 'Key Club meeting — room 904', category: 'extracurricular', priority: 'low', status: 'pending', due_date: dateDaysFromNow(7) },
+    { user_id: userId, title: 'Speech and Debate — Prep next case (Ms. Williamson)', category: 'extracurricular', priority: 'medium', status: 'pending', due_date: dateDaysFromNow(10) },
+    { user_id: userId, title: 'Work on Harvard Crimson essay draft', category: 'college_prep', priority: 'medium', status: 'pending', due_date: dateDaysFromNow(14) },
   ])
 
   // 5. Insert journal entries
@@ -139,7 +139,7 @@ async function handler() {
     // 9th Grade — Current
     { user_id: userId, title: 'Troy High School Cyber Basic Summer Camp', description: '9th Grade: Attended Troy High School Cyber Basic Summer Camp', source: 'manual', category: 'academic', is_portfolio_visible: true, achieved_at: '2025-07-01' },
     { user_id: userId, title: 'Completed Coursera: Intro to American Law', description: '9th Grade: Completed full Coursera course on Introduction to American Law', source: 'manual', category: 'academic', is_portfolio_visible: true, achieved_at: '2025-11-01' },
-    { user_id: userId, title: 'Joined Robotics Club, Debate Club, Key Club', description: '9th Grade: Active member of Robotics Club (lunch + afterschool), Debate Club (weekly), and Key Club (service org)', source: 'manual', category: 'leadership', is_portfolio_visible: true, achieved_at: '2025-09-15' },
+    { user_id: userId, title: 'Joined FRC Troy Robotics, Speech & Debate, Key Club', description: '9th Grade: Active member of FRC Troy Robotics (Mr. Goodman), Troy Speech and Debate (Ms. Williamson), and Troy Key Club', source: 'manual', category: 'leadership', is_portfolio_visible: true, achieved_at: '2025-09-15' },
     { user_id: userId, title: 'Pehlay Akshar — Story Recordings', description: '9th Grade: Recording stories for Pehlay Akshar — A Story A Day literacy initiative', source: 'manual', category: 'community', is_portfolio_visible: true, achieved_at: '2025-10-01' },
   ])
 
@@ -152,9 +152,9 @@ async function handler() {
   return NextResponse.json({
     success: true,
     seeded: {
-      profile: 'Roma Reddy, 9th grade, Troy High School, volleyball setter',
+      profile: 'Roma Reddy, 9th grade, Troy Tech / Cambridge AICE / IB, volleyball setter',
       goals: 7,
-      tasks: '8 completed + 11 pending',
+      tasks: '8 completed + 11 pending (based on real class schedule)',
       journal_entries: 5,
       achievements: '4 auto + 26 real accomplishments from 7th-9th grade',
     },
