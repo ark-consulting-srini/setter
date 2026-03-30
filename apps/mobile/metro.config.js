@@ -14,11 +14,18 @@ config.resolver.nodeModulesPaths = [
 ]
 
 // Explicitly map packages that Metro struggles to resolve in monorepo
-config.resolver.extraNodeModules = {
-  'react-native-css-interop': path.resolve(
-    monorepoRoot,
-    'node_modules/react-native-css-interop'
-  ),
-}
+// Some packages land in mobile/node_modules, others in root — help Metro find both
+config.resolver.extraNodeModules = new Proxy(
+  {},
+  {
+    get: (target, name) => {
+      // Check mobile node_modules first, then root
+      const mobileModule = path.resolve(projectRoot, 'node_modules', String(name))
+      const rootModule = path.resolve(monorepoRoot, 'node_modules', String(name))
+      try { require.resolve(mobileModule); return mobileModule } catch {}
+      return rootModule
+    },
+  }
+)
 
 module.exports = withNativeWind(config, { input: './global.css' })
