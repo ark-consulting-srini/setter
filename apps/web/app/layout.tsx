@@ -4,8 +4,8 @@ import { Toaster } from '@/components/ui/toaster'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Setter — Troy Tech College Companion',
-  description: 'Personal AI-powered companion for Roma Reddy. Plan, reflect, achieve. Go Warriors.',
+  title: 'Setter — Your Personal Companion',
+  description: 'Plan, reflect, achieve. Your AI-powered study companion.',
 }
 
 export default function RootLayout({

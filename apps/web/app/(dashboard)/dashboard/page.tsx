@@ -148,13 +148,13 @@ function getGreeting(): string {
 
 function getMotivation(): string {
   const messages = [
-    "Every set starts with reading the play. What's yours today?",
-    "Warriors don't wait for greatness — they work for it.",
-    "Small wins today, big results tomorrow. Let's go.",
-    "The best setters make everyone around them better.",
-    "Troy Tech didn't choose you by accident. Show them why.",
-    "Consistency beats intensity. What's the one thing you'll crush today?",
-    "Your future college app is being built right now, one day at a time.",
+    "What's the plan today? You've got this.",
+    "Small wins add up. What's first?",
+    "One thing at a time. What matters most right now?",
+    "You're building something amazing, one day at a time.",
+    "Consistency beats intensity. What will you knock out today?",
+    "Future you will thank present you. Let's go.",
+    "Big goals, small steps. What's yours today?",
   ]
   const dayOfYear = Math.floor(
     (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000
@@ -220,24 +220,19 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       {/* Hero Greeting */}
-      <div className="rounded-xl bg-gradient-to-r from-primary/90 to-primary p-6 text-white animate-fade-in-scale">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-black tracking-tight">
-            {greeting}, {firstName}
-          </h1>
-          <p className="text-sm text-white/80 max-w-lg">
-            {motivation}
-          </p>
-        </div>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Badge variant="secondary" className="bg-white/20 text-white border-white/30 hover:bg-white/30">
-            Troy Tech &apos;29
-          </Badge>
-          <Badge variant="secondary" className="bg-white/20 text-white border-white/30 hover:bg-white/30">
-            Volleyball Setter
-          </Badge>
-          <Badge variant="secondary" className="bg-white/20 text-white border-white/30 hover:bg-white/30">
+      <div className="rounded-2xl bg-gradient-to-br from-pink-100 via-pink-50 to-white border border-pink-100 p-6 animate-fade-in-scale">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          {greeting}, {firstName}
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1 max-w-lg">
+          {motivation}
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Badge variant="outline" className="bg-pink-50 text-pink-600 border-pink-200 text-xs">
             {summary.activeGoals} Active Goals
+          </Badge>
+          <Badge variant="outline" className="bg-pink-50 text-pink-600 border-pink-200 text-xs">
+            {summary.tasksCompletedThisWeek} Done This Week
           </Badge>
         </div>
       </div>

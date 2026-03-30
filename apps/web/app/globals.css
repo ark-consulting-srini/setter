@@ -4,58 +4,49 @@
 
 @layer base {
   :root {
-    /* Troy Warriors — crimson red & gold palette */
-    --background: 0 0% 99%;
-    --foreground: 220 20% 12%;
+    /* Baby Pink — soft, personal, not school */
+    --background: 340 30% 99%;
+    --foreground: 240 10% 15%;
     --card: 0 0% 100%;
-    --card-foreground: 220 20% 12%;
+    --card-foreground: 240 10% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 220 20% 12%;
-    --primary: 350 72% 42%;
+    --popover-foreground: 240 10% 15%;
+    --primary: 340 60% 65%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 40 60% 94%;
-    --secondary-foreground: 30 50% 25%;
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 10% 46%;
-    --accent: 350 50% 95%;
-    --accent-foreground: 350 72% 35%;
+    --secondary: 340 30% 95%;
+    --secondary-foreground: 340 20% 30%;
+    --muted: 340 15% 96%;
+    --muted-foreground: 240 5% 50%;
+    --accent: 340 40% 95%;
+    --accent-foreground: 340 50% 40%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 14% 90%;
-    --input: 220 14% 90%;
-    --ring: 350 72% 42%;
-    --radius: 0.625rem;
-
-    /* Custom brand colors */
-    --troy-crimson: 350 72% 42%;
-    --troy-gold: 43 80% 52%;
-    --troy-dark: 220 20% 12%;
+    --border: 340 15% 91%;
+    --input: 340 15% 91%;
+    --ring: 340 60% 65%;
+    --radius: 0.75rem;
   }
 
   .dark {
-    --background: 220 20% 7%;
-    --foreground: 220 10% 95%;
-    --card: 220 20% 10%;
-    --card-foreground: 220 10% 95%;
-    --popover: 220 20% 10%;
-    --popover-foreground: 220 10% 95%;
-    --primary: 350 72% 50%;
+    --background: 240 10% 7%;
+    --foreground: 340 10% 95%;
+    --card: 240 10% 10%;
+    --card-foreground: 340 10% 95%;
+    --popover: 240 10% 10%;
+    --popover-foreground: 340 10% 95%;
+    --primary: 340 60% 70%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 40 30% 18%;
-    --secondary-foreground: 40 60% 85%;
-    --muted: 220 18% 15%;
-    --muted-foreground: 220 10% 55%;
-    --accent: 350 40% 18%;
-    --accent-foreground: 350 60% 80%;
+    --secondary: 240 10% 16%;
+    --secondary-foreground: 340 20% 85%;
+    --muted: 240 10% 14%;
+    --muted-foreground: 240 5% 55%;
+    --accent: 340 30% 16%;
+    --accent-foreground: 340 50% 80%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 18% 18%;
-    --input: 220 18% 18%;
-    --ring: 350 72% 50%;
-
-    --troy-crimson: 350 72% 50%;
-    --troy-gold: 43 80% 58%;
-    --troy-dark: 220 20% 7%;
+    --border: 240 10% 16%;
+    --input: 240 10% 16%;
+    --ring: 340 60% 70%;
   }
 }
 
@@ -76,18 +67,6 @@
 
   .animate-slide-up {
     animation: slideUp 0.5s ease-out;
-  }
-
-  .text-troy-gold {
-    color: hsl(43 80% 52%);
-  }
-
-  .bg-troy-gold {
-    background-color: hsl(43 80% 52%);
-  }
-
-  .border-troy-gold {
-    border-color: hsl(43 80% 52%);
   }
 }
 

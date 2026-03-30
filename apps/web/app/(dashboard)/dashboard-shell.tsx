@@ -13,7 +13,6 @@ import {
   Menu,
   X,
   LogOut,
-  GraduationCap,
   Target,
   BrainCircuit,
 } from 'lucide-react'
@@ -75,10 +74,7 @@ export function DashboardShell({ userName, children }: DashboardShellProps) {
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground text-sm font-black tracking-tight">
               S
             </div>
-            <div className="flex flex-col">
-              <span className="text-lg font-black leading-tight tracking-tight">Setter</span>
-              <span className="text-[10px] font-medium text-muted-foreground leading-tight">Troy Tech &apos;29</span>
-            </div>
+            <span className="text-lg font-bold leading-tight tracking-tight">Setter</span>
           </Link>
           <Button
             variant="ghost"
@@ -92,10 +88,7 @@ export function DashboardShell({ userName, children }: DashboardShellProps) {
 
         {/* User greeting */}
         <div className="px-6 pb-4">
-          <div className="flex items-center gap-2">
-            <GraduationCap className="h-4 w-4 text-troy-gold" />
-            <p className="text-sm text-muted-foreground">Hey, {firstName}</p>
-          </div>
+          <p className="text-sm text-muted-foreground">Hey, {firstName}</p>
         </div>
 
         <Separator />
