@@ -27,21 +27,51 @@ export default function QuizPlayerPage() {
   const [startTime] = useState(Date.now())
   const [submitting, setSubmitting] = useState(false)
 
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
   useEffect(() => {
     async function load() {
-      const [setsRes, questionsRes] = await Promise.all([
-        fetch('/api/quiz/sets'),
-        fetch(`/api/quiz/questions?setId=${id}`),
-      ])
+      try {
+        setLoading(true)
+        setError(null)
 
-      if (!setsRes.ok || !questionsRes.ok) return
+        const [setsRes, questionsRes] = await Promise.all([
+          fetch('/api/quiz/sets'),
+          fetch(`/api/quiz/questions?setId=${id}`),
+        ])
 
-      const { sets } = await setsRes.json()
-      const set = sets.find((s: QuizSet) => s.id === id)
-      const questions = await questionsRes.json()
+        if (!setsRes.ok) {
+          const err = await setsRes.text()
+          setError(`Failed to load quiz sets: ${err}`)
+          return
+        }
 
-      if (set) {
-        setData({ quizSet: set, questions: questions ?? [] })
+        if (!questionsRes.ok) {
+          const err = await questionsRes.text()
+          setError(`Failed to load questions: ${err}`)
+          return
+        }
+
+        const { sets } = await setsRes.json()
+        const set = sets.find((s: QuizSet) => s.id === id)
+        const questions = await questionsRes.json()
+
+        if (!set) {
+          setError('Quiz set not found')
+          return
+        }
+
+        if (!questions || !Array.isArray(questions) || questions.length === 0) {
+          setError(`No questions found for this quiz (set: ${set.title}). The quiz may not have generated correctly. Try creating a new one.`)
+          return
+        }
+
+        setData({ quizSet: set, questions })
+      } catch (e) {
+        setError(`Unexpected error: ${e instanceof Error ? e.message : String(e)}`)
+      } finally {
+        setLoading(false)
       }
     }
     load()
@@ -83,7 +113,7 @@ export default function QuizPlayerPage() {
   }
 
   // Mode selection screen
-  if (!mode) {
+  if (!mode && !loading) {
     return (
       <div className="space-y-6">
         <Button variant="ghost" size="sm" onClick={() => router.push('/quiz')}>
@@ -191,8 +221,30 @@ export default function QuizPlayerPage() {
     )
   }
 
-  if (!question) {
+  if (loading) {
     return <div className="py-12 text-center text-muted-foreground">Loading questions...</div>
+  }
+
+  if (error) {
+    return (
+      <div className="py-12 text-center space-y-4">
+        <p className="text-sm text-destructive">{error}</p>
+        <Button variant="outline" onClick={() => router.push('/quiz')}>
+          <ArrowLeft className="mr-1 h-4 w-4" /> Back to Quiz Zone
+        </Button>
+      </div>
+    )
+  }
+
+  if (!question) {
+    return (
+      <div className="py-12 text-center space-y-4">
+        <p className="text-sm text-muted-foreground">No questions available.</p>
+        <Button variant="outline" onClick={() => router.push('/quiz')}>
+          <ArrowLeft className="mr-1 h-4 w-4" /> Back to Quiz Zone
+        </Button>
+      </div>
+    )
   }
 
   // Learn mode (flashcards)
