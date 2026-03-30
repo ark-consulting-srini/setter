@@ -306,7 +306,7 @@ export default function CollegePage() {
               <CardContent className="p-5 space-y-4">
                 <div className="flex items-start gap-4">
                   <img
-                    src={`https://logo.clearbit.com/${getLogoDomain(analysis.college.website)}`}
+                    src={`https://www.google.com/s2/favicons?sz=128&domain=${getLogoDomain(analysis.college.website)}`}
                     alt={analysis.college.name}
                     className="h-12 w-12 rounded-lg object-contain bg-white border"
                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
@@ -395,7 +395,7 @@ export default function CollegePage() {
                       <CardContent className="p-3">
                         <div className="flex items-start gap-3">
                           <img
-                            src={`https://logo.clearbit.com/${getLogoDomain(entry.college.website)}`}
+                            src={`https://www.google.com/s2/favicons?sz=128&domain=${getLogoDomain(entry.college.website)}`}
                             alt=""
                             className="h-8 w-8 rounded-md object-contain bg-white border flex-shrink-0"
                             onError={(e) => { (e.target as HTMLImageElement).src = '' ; (e.target as HTMLImageElement).className = 'hidden' }}
@@ -512,7 +512,7 @@ export default function CollegePage() {
                       {/* Logo + Name */}
                       <div className="flex items-start gap-3">
                         <img
-                          src={`https://logo.clearbit.com/${getLogoDomain(college.website)}`}
+                          src={`https://www.google.com/s2/favicons?sz=128&domain=${getLogoDomain(college.website)}`}
                           alt=""
                           className="h-10 w-10 rounded-lg object-contain bg-white border flex-shrink-0"
                           onError={(e) => {
