@@ -91,6 +91,9 @@ export default function CollegePage() {
   const [analysis, setAnalysis] = useState<{ analysis: FitAnalysis; college: College } | null>(null)
   const [uploading, setUploading] = useState(false)
   const [seeding, setSeeding] = useState(false)
+  const [editingGpa, setEditingGpa] = useState(false)
+  const [gpaUW, setGpaUW] = useState('')
+  const [gpaW, setGpaW] = useState('')
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('')
@@ -98,6 +101,7 @@ export default function CollegePage() {
   const [typeFilter, setTypeFilter] = useState<string>('all')
   const [acceptanceFilter, setAcceptanceFilter] = useState<string>('all')
   const [volleyballFilter, setVolleyballFilter] = useState(false)
+  const [satMatchFilter, setSatMatchFilter] = useState<string>('all') // 'all', 'in_range', 'above'
   const [showFilters, setShowFilters] = useState(false)
 
   // View
@@ -197,6 +201,26 @@ export default function CollegePage() {
     }
   }
 
+  async function saveGpa() {
+    const uw = parseFloat(gpaUW)
+    const w = parseFloat(gpaW)
+
+    const res = await fetch('/api/college/profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        documentText: `GPA Update: Unweighted GPA is ${gpaUW || 'unknown'}. Weighted GPA is ${gpaW || 'unknown'}.`,
+        fileName: 'Manual GPA Entry',
+      }),
+    })
+
+    if (res.ok) {
+      const data = await res.json()
+      setProfile(data.profile)
+    }
+    setEditingGpa(false)
+  }
+
   async function removeFromList(id: string) {
     await fetch('/api/college/list', {
       method: 'DELETE',
@@ -224,6 +248,10 @@ export default function CollegePage() {
   else if (acceptanceFilter === 'under50') filtered = filtered.filter((c) => c.acceptance_rate < 50)
   else if (acceptanceFilter === 'over50') filtered = filtered.filter((c) => c.acceptance_rate >= 50)
   if (volleyballFilter) filtered = filtered.filter((c) => c.has_volleyball)
+  if (satMatchFilter !== 'all' && profile?.sat_score) {
+    if (satMatchFilter === 'in_range') filtered = filtered.filter((c) => profile.sat_score! >= c.sat_range_low)
+    else if (satMatchFilter === 'above') filtered = filtered.filter((c) => profile.sat_score! >= c.sat_range_high)
+  }
 
   const myListIds = new Set(myList.map((e) => e.college_id))
   const getListEntry = (collegeId: string) => myList.find((e) => e.college_id === collegeId)
@@ -261,9 +289,53 @@ export default function CollegePage() {
               ) : (
                 <p className="text-xs text-muted-foreground mt-1">Upload transcripts, report cards, awards — AI builds your college-ready profile.</p>
               )}
+
+              {/* GPA Display */}
+              {profile && !editingGpa && (
+                <div className="flex items-center gap-4 mt-3">
+                  <div className="flex items-center gap-3">
+                    <div className="text-center">
+                      <p className="text-xl font-bold text-foreground">{profile.gpa_unweighted?.toFixed(2) ?? '—'}</p>
+                      <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Unweighted</p>
+                    </div>
+                    <div className="h-8 w-px bg-border" />
+                    <div className="text-center">
+                      <p className="text-xl font-bold text-foreground">{profile.gpa_weighted?.toFixed(2) ?? '—'}</p>
+                      <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Weighted</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setEditingGpa(true)
+                      setGpaUW(profile.gpa_unweighted?.toString() ?? '')
+                      setGpaW(profile.gpa_weighted?.toString() ?? '')
+                    }}
+                    className="text-[10px] text-primary hover:underline"
+                  >
+                    Edit
+                  </button>
+                </div>
+              )}
+
+              {/* GPA Edit */}
+              {editingGpa && (
+                <div className="flex items-end gap-2 mt-3">
+                  <div className="space-y-1">
+                    <Label className="text-[10px]">Unweighted GPA</Label>
+                    <Input value={gpaUW} onChange={(e) => setGpaUW(e.target.value)} placeholder="e.g., 3.85" className="h-8 w-24 text-sm" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[10px]">Weighted GPA</Label>
+                    <Input value={gpaW} onChange={(e) => setGpaW(e.target.value)} placeholder="e.g., 4.20" className="h-8 w-24 text-sm" />
+                  </div>
+                  <Button size="sm" className="h-8" onClick={saveGpa}>Save</Button>
+                  <Button size="sm" variant="ghost" className="h-8" onClick={() => setEditingGpa(false)}>Cancel</Button>
+                </div>
+              )}
+
+              {/* Other stats */}
               {profile && (
                 <div className="flex flex-wrap gap-1.5 mt-2">
-                  {profile.gpa_unweighted && <Badge variant="outline" className="text-[10px]">GPA: {profile.gpa_unweighted}</Badge>}
                   {profile.sat_score && <Badge variant="outline" className="text-[10px]">SAT: {profile.sat_score}</Badge>}
                   {profile.ap_classes?.length > 0 && <Badge variant="outline" className="text-[10px]">{profile.ap_classes.length} APs</Badge>}
                   {profile.awards?.length > 0 && <Badge variant="outline" className="text-[10px]">{profile.awards.length} Awards</Badge>}
@@ -438,7 +510,7 @@ export default function CollegePage() {
               <Button variant="outline" size="sm" onClick={() => setShowFilters(!showFilters)}>
                 <SlidersHorizontal className="mr-1 h-3.5 w-3.5" />
                 Filters
-                {(stateFilter !== 'all' || typeFilter !== 'all' || acceptanceFilter !== 'all' || volleyballFilter) && (
+                {(stateFilter !== 'all' || typeFilter !== 'all' || acceptanceFilter !== 'all' || volleyballFilter || satMatchFilter !== 'all') && (
                   <span className="ml-1 h-4 w-4 rounded-full bg-primary text-primary-foreground text-[9px] flex items-center justify-center">!</span>
                 )}
               </Button>
@@ -472,6 +544,16 @@ export default function CollegePage() {
                         ))}
                       </div>
                     </div>
+                    {profile?.sat_score && (
+                      <div className="space-y-1">
+                        <Label className="text-xs">SAT Match (yours: {profile.sat_score})</Label>
+                        <div className="flex gap-1">
+                          {[{ value: 'all', label: 'All' }, { value: 'in_range', label: 'In Range' }, { value: 'above', label: 'Above Range' }].map((f) => (
+                            <button key={f.value} onClick={() => setSatMatchFilter(f.value)} className={cn('rounded-full px-2.5 py-1 text-[11px] font-medium', satMatchFilter === f.value ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground')}>{f.label}</button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     <div className="space-y-1">
                       <Label className="text-xs">Volleyball</Label>
                       <button
@@ -480,8 +562,8 @@ export default function CollegePage() {
                       >🏐 Has Volleyball</button>
                     </div>
                   </div>
-                  {(stateFilter !== 'all' || typeFilter !== 'all' || acceptanceFilter !== 'all' || volleyballFilter) && (
-                    <button onClick={() => { setStateFilter('all'); setTypeFilter('all'); setAcceptanceFilter('all'); setVolleyballFilter(false) }} className="mt-2 text-[10px] text-primary hover:underline">
+                  {(stateFilter !== 'all' || typeFilter !== 'all' || acceptanceFilter !== 'all' || volleyballFilter || satMatchFilter !== 'all') && (
+                    <button onClick={() => { setStateFilter('all'); setTypeFilter('all'); setAcceptanceFilter('all'); setVolleyballFilter(false); setSatMatchFilter('all') }} className="mt-2 text-[10px] text-primary hover:underline">
                       Clear all filters
                     </button>
                   )}
@@ -537,6 +619,15 @@ export default function CollegePage() {
                         <div>
                           <p className="text-lg font-bold text-foreground">{college.sat_range_low}-{college.sat_range_high}</p>
                           <p className="text-[9px] text-muted-foreground">SAT Range</p>
+                          {profile?.sat_score && (
+                            <p className={cn('text-[9px] font-semibold mt-0.5',
+                              profile.sat_score >= college.sat_range_low ? 'text-emerald-600' : 'text-red-500'
+                            )}>
+                              {profile.sat_score >= college.sat_range_high ? '✓ Above range' :
+                               profile.sat_score >= college.sat_range_low ? '~ In range' :
+                               `✗ Below (yours: ${profile.sat_score})`}
+                            </p>
+                          )}
                         </div>
                       </div>
 

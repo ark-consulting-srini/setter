@@ -15,6 +15,8 @@ async function getDashboardData(supabase: ReturnType<typeof createClient>): Prom
   summary: DashboardSummary
   userId: string
   userName: string
+  gpaUnweighted: number | null
+  gpaWeighted: number | null
   activeGoals: { title: string; goal_type: string; progress_pct: number }[]
   upcomingTasks: { title: string; category: string; due_date: string }[]
   recentAchievements: { title: string; category: string; achieved_at: string }[]
@@ -40,6 +42,7 @@ async function getDashboardData(supabase: ReturnType<typeof createClient>): Prom
     { data: goalsList },
     { data: upcoming },
     { data: recentAch },
+    { data: studentProfile },
   ] = await Promise.all([
     supabase
       .from('tasks')
@@ -104,6 +107,12 @@ async function getDashboardData(supabase: ReturnType<typeof createClient>): Prom
       .eq('user_id', userId)
       .order('achieved_at', { ascending: false })
       .limit(3),
+
+    supabase
+      .from('student_profile')
+      .select('gpa_unweighted, gpa_weighted')
+      .eq('user_id', userId)
+      .single(),
   ])
 
   let currentStreak = 0
@@ -134,6 +143,8 @@ async function getDashboardData(supabase: ReturnType<typeof createClient>): Prom
     },
     userId,
     userName: userProfile?.full_name ?? 'Roma',
+    gpaUnweighted: studentProfile?.gpa_unweighted ?? null,
+    gpaWeighted: studentProfile?.gpa_weighted ?? null,
     activeGoals: goalsList ?? [],
     upcomingTasks: upcoming ?? [],
     recentAchievements: recentAch ?? [],
@@ -161,7 +172,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export default async function DashboardPage() {
   const supabase = createClient()
-  const { summary, userName, activeGoals, upcomingTasks, recentAchievements } = await getDashboardData(supabase)
+  const { summary, userName, gpaUnweighted, gpaWeighted, activeGoals, upcomingTasks, recentAchievements } = await getDashboardData(supabase)
 
   const firstName = userName.split(' ')[0]
 
@@ -202,6 +213,11 @@ export default async function DashboardPage() {
       <div className="rounded-2xl bg-gradient-to-br from-pink-100 via-pink-50 to-white border border-pink-100 p-6 animate-fade-in-scale">
         <Greeting firstName={firstName} />
         <div className="mt-3 flex flex-wrap gap-2">
+          {gpaUnweighted && (
+            <Badge variant="outline" className="bg-pink-50 text-pink-600 border-pink-200 text-xs">
+              GPA: {gpaUnweighted.toFixed(2)} UW {gpaWeighted ? `/ ${gpaWeighted.toFixed(2)} W` : ''}
+            </Badge>
+          )}
           <Badge variant="outline" className="bg-pink-50 text-pink-600 border-pink-200 text-xs">
             {summary.activeGoals} Active Goals
           </Badge>
