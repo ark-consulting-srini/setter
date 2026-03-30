@@ -7,6 +7,7 @@ import { TodaysTasks } from './todays-tasks'
 import { RecentJournal } from './recent-journal'
 import { NewsFeed } from './news-feed'
 import { Greeting } from './greeting'
+import { PrimaryGoals } from './primary-goals'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import type { DashboardSummary } from '@setter/shared/types'
@@ -243,6 +244,9 @@ export default async function DashboardPage() {
           </Card>
         ))}
       </div>
+
+      {/* Primary Goals */}
+      <PrimaryGoals />
 
       {/* Main Content Grid */}
       <div className="grid gap-6 lg:grid-cols-3">
