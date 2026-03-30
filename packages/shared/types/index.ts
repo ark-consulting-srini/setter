@@ -203,3 +203,97 @@ export const CATEGORY_LABELS: Record<TaskCategory, string> = {
   athletic: 'Athletic',
   college_prep: 'College Prep',
 }
+
+// ---- Quiz Types ----
+
+export type QuizSourceType = 'ai_generated' | 'manual' | 'from_document'
+export type QuestionType = 'flashcard' | 'multiple_choice' | 'true_false' | 'fill_blank'
+export type QuizDifficulty = 'easy' | 'medium' | 'hard'
+export type QuizMode = 'learn' | 'test' | 'review'
+
+export interface QuizSet {
+  id: string
+  user_id: string
+  title: string
+  subject: string | null
+  source_type: QuizSourceType
+  description: string | null
+  question_count: number
+  created_at: string
+  updated_at: string
+}
+
+export interface QuizQuestion {
+  id: string
+  quiz_set_id: string
+  user_id: string
+  question_type: QuestionType
+  question_text: string
+  correct_answer: string
+  options: string[] | null
+  explanation: string | null
+  difficulty: QuizDifficulty
+  order_index: number
+  created_at: string
+}
+
+export interface QuizAttempt {
+  id: string
+  user_id: string
+  quiz_set_id: string
+  mode: QuizMode
+  score: number | null
+  total_questions: number
+  correct_count: number
+  time_spent_seconds: number
+  completed_at: string | null
+  created_at: string
+}
+
+export interface QuizResponse {
+  id: string
+  attempt_id: string
+  question_id: string
+  user_id: string
+  user_answer: string | null
+  is_correct: boolean
+  time_spent_seconds: number
+  created_at: string
+}
+
+export interface QuizSRCard {
+  id: string
+  user_id: string
+  question_id: string
+  ease_factor: number
+  interval_days: number
+  repetitions: number
+  next_review_at: string
+  last_reviewed_at: string | null
+  created_at: string
+}
+
+export interface GenerateQuizRequest {
+  subject: string
+  topic?: string
+  questionTypes: QuestionType[]
+  questionCount: number
+  difficulty?: QuizDifficulty
+  documentText?: string
+}
+
+export interface SubmitQuizRequest {
+  quizSetId: string
+  mode: QuizMode
+  responses: { questionId: string; answer: string; timeSpentSeconds: number }[]
+  totalTimeSeconds: number
+}
+
+export const ROMA_SUBJECTS = [
+  'AP World History',
+  'Algebra 2',
+  'Honors Bio 3',
+  'English Honors',
+  'AP CSP',
+  'Español 2',
+] as const

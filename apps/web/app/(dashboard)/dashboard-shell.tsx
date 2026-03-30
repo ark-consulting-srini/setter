@@ -15,6 +15,7 @@ import {
   LogOut,
   GraduationCap,
   Target,
+  BrainCircuit,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
@@ -26,6 +27,7 @@ const NAV_ITEMS = [
   { href: '/tasks', label: 'Game Plan', icon: CheckSquare },
   { href: '/journal', label: 'Playbook', icon: BookOpen },
   { href: '/chat', label: 'Talk to Setter', icon: MessageCircle },
+  { href: '/quiz', label: 'Quiz Zone', icon: BrainCircuit },
   { href: '/achievements', label: 'Trophy Case', icon: Trophy },
   { href: '/goals', label: 'Goals', icon: Target },
   { href: '/portfolio', label: 'Portfolio', icon: User },
