@@ -8,7 +8,7 @@
     "scheme": "setter",
     "userInterfaceStyle": "light",
     "splash": {
-      "backgroundColor": "#7c3aed"
+      "backgroundColor": "#A5243D"
     },
     "ios": {
       "supportsTablet": false,
@@ -16,13 +16,20 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#7c3aed"
+        "backgroundColor": "#A5243D"
       },
       "package": "com.setter.app"
     },
     "plugins": [
       "expo-router",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Setter needs access to your photos to read screenshots and documents.",
+          "cameraPermission": "Setter needs camera access to snap homework and worksheets."
+        }
+      ]
     ]
   }
 }
