@@ -71,8 +71,22 @@ export async function POST(req: Request) {
   // ---- 4. Stream from Claude ----
   const stream = await anthropic.messages.stream({
     model: 'claude-sonnet-4-20250514',
-    max_tokens: 1024,
-    system: systemPrompt,
+    max_tokens: 2048,
+    system: systemPrompt + `
+
+## Response formatting:
+- Use markdown for structure: headers, bullet points, numbered steps, bold, italic
+- For math: use clear notation and show step-by-step work
+- For code: use fenced code blocks with language tags
+- When explaining concepts, break them into digestible chunks
+- Ask a follow-up question at the end to keep the conversation going and deepen understanding
+- If the student seems stuck, offer to break the problem into smaller steps
+
+## Safety:
+- Keep all responses age-appropriate and academically focused
+- Never do the student's homework for them — guide them to the answer
+- If asked about inappropriate topics, redirect to academics kindly
+- Encourage critical thinking over memorization`,
     messages: claudeMessages,
   })
 
@@ -102,12 +116,20 @@ export async function POST(req: Request) {
         { role: 'assistant', content: fullResponse, timestamp: new Date().toISOString() },
       ]
 
+      // Auto-generate title from first user message if not set
+      const updateData: Record<string, unknown> = {
+        messages: updatedMessages,
+        context_snapshot: context,
+      }
+
+      if (history.length === 0) {
+        // First message — set title from user message
+        updateData.title = message.slice(0, 60) + (message.length > 60 ? '...' : '')
+      }
+
       await supabase
         .from('chat_sessions')
-        .update({
-          messages: updatedMessages,
-          context_snapshot: context,
-        })
+        .update(updateData)
         .eq('id', currentSessionId)
 
       controller.close()
