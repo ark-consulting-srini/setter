@@ -16,6 +16,7 @@ import {
   Target,
   BrainCircuit,
   Brain,
+  GraduationCap,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
@@ -30,6 +31,7 @@ const NAV_ITEMS = [
   { href: '/quiz', label: 'Quiz Zone', icon: BrainCircuit },
   { href: '/knowledge', label: 'Knowledge Base', icon: Brain },
   { href: '/achievements', label: 'Trophy Case', icon: Trophy },
+  { href: '/college', label: 'College Research', icon: GraduationCap },
   { href: '/goals', label: 'Goals', icon: Target },
   { href: '/portfolio', label: 'Portfolio', icon: User },
 ] as const
