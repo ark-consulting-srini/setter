@@ -6,6 +6,7 @@ import { QuickAddTask } from './quick-add-task'
 import { TodaysTasks } from './todays-tasks'
 import { RecentJournal } from './recent-journal'
 import { NewsFeed } from './news-feed'
+import { Greeting } from './greeting'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import type { DashboardSummary } from '@setter/shared/types'
@@ -139,28 +140,8 @@ async function getDashboardData(supabase: ReturnType<typeof createClient>): Prom
   }
 }
 
-function getGreeting(): string {
-  const hour = new Date().getHours()
-  if (hour < 12) return 'Good morning'
-  if (hour < 17) return 'Good afternoon'
-  return 'Good evening'
-}
-
-function getMotivation(): string {
-  const messages = [
-    "What's the plan today? You've got this.",
-    "Small wins add up. What's first?",
-    "One thing at a time. What matters most right now?",
-    "You're building something amazing, one day at a time.",
-    "Consistency beats intensity. What will you knock out today?",
-    "Future you will thank present you. Let's go.",
-    "Big goals, small steps. What's yours today?",
-  ]
-  const dayOfYear = Math.floor(
-    (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000
-  )
-  return messages[dayOfYear % messages.length]
-}
+// getGreeting and getMotivation moved to client component (greeting.tsx)
+// Server Components run in Vercel's timezone, not the user's
 
 const GOAL_TYPE_COLORS: Record<string, string> = {
   academic: 'bg-blue-100 text-blue-700',
@@ -183,8 +164,6 @@ export default async function DashboardPage() {
   const { summary, userName, activeGoals, upcomingTasks, recentAchievements } = await getDashboardData(supabase)
 
   const firstName = userName.split(' ')[0]
-  const greeting = getGreeting()
-  const motivation = getMotivation()
 
   const SUMMARY_CARDS = [
     {
@@ -221,12 +200,7 @@ export default async function DashboardPage() {
     <div className="space-y-8">
       {/* Hero Greeting */}
       <div className="rounded-2xl bg-gradient-to-br from-pink-100 via-pink-50 to-white border border-pink-100 p-6 animate-fade-in-scale">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          {greeting}, {firstName}
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1 max-w-lg">
-          {motivation}
-        </p>
+        <Greeting firstName={firstName} />
         <div className="mt-3 flex flex-wrap gap-2">
           <Badge variant="outline" className="bg-pink-50 text-pink-600 border-pink-200 text-xs">
             {summary.activeGoals} Active Goals
