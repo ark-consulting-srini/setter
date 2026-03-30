@@ -53,7 +53,7 @@ export function TaskCard({ task, onComplete }: TaskCardProps) {
         >
           <View
             className={`w-6 h-6 rounded-full border-2 items-center justify-center ${
-              isCompleted ? 'bg-violet-600 border-violet-600' : 'border-slate-300'
+              isCompleted ? 'bg-crimson-600 border-crimson-600' : 'border-slate-300'
             }`}
           >
             {isCompleted && (

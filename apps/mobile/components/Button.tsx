@@ -14,7 +14,7 @@ interface ButtonProps {
 
 const variantStyles: Record<ButtonVariant, { container: string; text: string }> = {
   primary: {
-    container: 'bg-violet-600 active:bg-violet-700',
+    container: 'bg-crimson-600 active:bg-crimson-700',
     text: 'text-white',
   },
   secondary: {
