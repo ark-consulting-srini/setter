@@ -157,12 +157,15 @@ export default function QuizPage() {
 
   // Create form state
   const [subject, setSubject] = useState<string>(ROMA_SUBJECTS[0])
-  const [topic, setTopic] = useState('')
+  const [selectedTopics, setSelectedTopics] = useState<string[]>([])
+  const [customTopic, setCustomTopic] = useState('')
   const [questionCount, setQuestionCount] = useState(10)
   const [difficulty, setDifficulty] = useState<QuizDifficulty | 'mixed'>('mixed')
   const [selectedTypes, setSelectedTypes] = useState<QuestionType[]>(['multiple_choice', 'true_false'])
+  const [apExamStyle, setApExamStyle] = useState(false)
   const [documentText, setDocumentText] = useState('')
   const [uploading, setUploading] = useState(false)
+  const isAP = subject.startsWith('AP ')
 
   useEffect(() => { fetchSets() }, [])
 
@@ -175,9 +178,19 @@ export default function QuizPage() {
     }
   }
 
+  function toggleTopic(t: string) {
+    setSelectedTopics((prev) =>
+      prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]
+    )
+  }
+
   async function handleGenerate(e: React.FormEvent) {
     e.preventDefault()
     if (!subject || selectedTypes.length === 0) return
+
+    const topicStr = selectedTopics.length > 0
+      ? selectedTopics.join(', ')
+      : customTopic || undefined
 
     setGenerating(true)
     try {
@@ -186,19 +199,22 @@ export default function QuizPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           subject,
-          topic: topic || undefined,
-          questionTypes: selectedTypes,
-          questionCount,
+          topic: topicStr,
+          questionTypes: apExamStyle ? ['multiple_choice'] : selectedTypes,
+          questionCount: apExamStyle ? Math.max(questionCount, 15) : questionCount,
           difficulty: difficulty === 'mixed' ? undefined : difficulty,
           documentText: documentText || undefined,
+          apExamStyle,
         }),
       })
 
       if (res.ok) {
         const data = await res.json()
         setShowCreate(false)
-        setTopic('')
+        setSelectedTopics([])
+        setCustomTopic('')
         setDocumentText('')
+        setApExamStyle(false)
         fetchSets()
         router.push(`/quiz/${data.quizSet.id}`)
       } else {
@@ -293,44 +309,72 @@ export default function QuizPage() {
                   <Label>Subject</Label>
                   <select
                     value={subject}
-                    onChange={(e) => { setSubject(e.target.value); setTopic('') }}
+                    onChange={(e) => { setSubject(e.target.value); setSelectedTopics([]); setCustomTopic('') }}
                     className="w-full rounded-md border bg-background px-3 py-2 text-sm"
                   >
                     {ROMA_SUBJECTS.map((s) => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Topic</Label>
-                  {SUBJECT_TOPICS[subject] ? (
-                    <select
-                      value={topic}
-                      onChange={(e) => setTopic(e.target.value)}
-                      className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-                    >
-                      <option value="">General review (all topics)</option>
-                      {SUBJECT_TOPICS[subject].map((t) => (
-                        <option key={t} value={t}>{t}</option>
-                      ))}
-                      <option value="__custom__">Custom topic...</option>
-                    </select>
-                  ) : (
-                    <Input placeholder="e.g., Unit 5 Vocabulary" value={topic} onChange={(e) => setTopic(e.target.value)} />
-                  )}
-                  {topic === '__custom__' && (
-                    <Input
-                      placeholder="Type your topic..."
-                      onChange={(e) => {
-                        if (e.target.value) setTopic(e.target.value)
-                      }}
-                      onBlur={(e) => {
-                        if (e.target.value) setTopic(e.target.value)
-                      }}
-                      className="mt-2"
-                      autoFocus
-                    />
-                  )}
+                  <Label>Topic (or type custom)</Label>
+                  <Input
+                    placeholder="Custom topic (optional)"
+                    value={customTopic}
+                    onChange={(e) => setCustomTopic(e.target.value)}
+                  />
                 </div>
               </div>
+
+              {/* Topic Multi-Select */}
+              {SUBJECT_TOPICS[subject] && (
+                <div className="space-y-2">
+                  <Label>
+                    Topics {selectedTopics.length > 0 && <span className="text-primary font-normal">({selectedTopics.length} selected)</span>}
+                  </Label>
+                  <div className="flex flex-wrap gap-1.5 max-h-[140px] overflow-y-auto rounded-lg border p-2">
+                    {SUBJECT_TOPICS[subject].map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => toggleTopic(t)}
+                        className={cn(
+                          'rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors',
+                          selectedTopics.includes(t)
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted text-muted-foreground hover:bg-accent'
+                        )}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">Click topics to select. Leave empty for general review.</p>
+                </div>
+              )}
+
+              {/* AP Exam Style */}
+              {isAP && (
+                <div className="flex items-center gap-3 rounded-lg border p-3 bg-accent/30">
+                  <input
+                    type="checkbox"
+                    id="apExamStyle"
+                    checked={apExamStyle}
+                    onChange={(e) => {
+                      setApExamStyle(e.target.checked)
+                      if (e.target.checked) {
+                        setSelectedTypes(['multiple_choice'])
+                        setQuestionCount(15)
+                        setDifficulty('mixed')
+                      }
+                    }}
+                    className="h-4 w-4 rounded border-gray-300"
+                  />
+                  <label htmlFor="apExamStyle" className="text-sm cursor-pointer">
+                    <span className="font-semibold">AP Exam Style</span>
+                    <span className="text-xs text-muted-foreground block">Multiple choice with stimulus-based questions, modeled after the real AP exam format</span>
+                  </label>
+                </div>
+              )}
 
               {/* Question Types */}
               <div className="space-y-2">

@@ -10,8 +10,8 @@ export async function POST(req: Request) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const body: GenerateQuizRequest = await req.json()
-  const { subject, topic, questionTypes, questionCount, difficulty, documentText } = body
+  const body = await req.json()
+  const { subject, topic, questionTypes, questionCount, difficulty, documentText, apExamStyle } = body as GenerateQuizRequest & { apExamStyle?: boolean }
 
   if (!subject || !questionTypes.length || questionCount < 1) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -25,12 +25,26 @@ export async function POST(req: Request) {
     ? `\n\nGenerate questions based on this study material:\n---\n${documentText.slice(0, 6000)}\n---`
     : ''
 
+  const apExamInstructions = apExamStyle ? `
+
+IMPORTANT — AP EXAM STYLE INSTRUCTIONS:
+You MUST format this quiz to closely mirror the actual ${subject} AP exam:
+- Use STIMULUS-BASED questions: provide a short passage, primary source excerpt, image description, map description, chart/data description, or historical document as context before the question
+- Each question should have 4 answer choices (A, B, C, D)
+- Include questions that test: causation, comparison, continuity/change over time, contextualization, and argumentation
+- Use AP-level academic language and complexity
+- Some questions should require analysis of the stimulus, not just recall
+- Include "Which of the following best..." and "All of the following EXCEPT..." style questions
+- Distractors (wrong answers) should be plausible and test common misconceptions
+- This should feel like a real AP exam practice section
+` : ''
+
   const systemPrompt = `You are a quiz generator for Roma, a 9th grader at Troy High School in the Troy Tech magnet program.
 
 Subject: ${subject}
 Topic: ${topic || 'general review'}
 Difficulty: ${difficultyStr}
-${documentContext}
+${apExamInstructions}${documentContext}
 
 Generate exactly ${count} questions using these types: ${types}.
 
