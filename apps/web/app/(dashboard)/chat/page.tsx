@@ -5,7 +5,6 @@ import {
   Send,
   Plus,
   Search,
-  MoreHorizontal,
   Trash2,
   Pencil,
   ChevronLeft,
@@ -18,6 +17,9 @@ import {
   GraduationCap,
   MessageCircle,
   X,
+  Paperclip,
+  FileText,
+  Loader2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -63,6 +65,11 @@ export default function ChatPage() {
   const [streaming, setStreaming] = useState(false)
   const [waitingForFirst, setWaitingForFirst] = useState(false)
 
+  // File upload state
+  const [attachedFile, setAttachedFile] = useState<{ name: string; text: string } | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   // Sidebar state
   const [sessions, setSessions] = useState<ChatSession[]>([])
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -106,15 +113,60 @@ export default function ChatPage() {
     ta.style.height = Math.min(ta.scrollHeight, 160) + 'px'
   }, [])
 
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      if (sessionId) formData.append('sessionId', sessionId)
+
+      const res = await fetch('/api/chat/upload', { method: 'POST', body: formData })
+      const data = await res.json()
+
+      if (!res.ok) {
+        alert(data.error || 'Upload failed')
+        return
+      }
+
+      setAttachedFile({ name: data.fileName, text: data.extractedText })
+    } catch {
+      alert('Failed to upload file. Please try again.')
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
   async function handleSend(messageOverride?: string) {
     const message = (messageOverride ?? input).trim()
-    if (!message || streaming) return
+    if (!message && !attachedFile) return
+    if (streaming) return
+
+    // Build the full message with file context
+    const currentFile = attachedFile
+    let fullMessage = message
+    if (currentFile) {
+      const fileContext = `[Attached file: ${currentFile.name}]\n\nFile contents:\n${currentFile.text}`
+      fullMessage = message
+        ? `${message}\n\n${fileContext}`
+        : `Please review this document and help me understand it:\n\n${fileContext}`
+      setAttachedFile(null)
+    }
+
+    if (!fullMessage) return
 
     setInput('')
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto'
     }
-    setMessages((prev) => [...prev, { role: 'user', content: message }])
+    // Show just the user's typed message (not the full file dump) in the UI
+    const displayMessage = currentFile
+      ? (message ? `${message}\n\n📎 ${currentFile.name}` : `📎 Uploaded: ${currentFile.name}`)
+      : message
+    setMessages((prev) => [...prev, { role: 'user', content: displayMessage }])
     setStreaming(true)
     setWaitingForFirst(true)
 
@@ -122,7 +174,7 @@ export default function ChatPage() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, message }),
+        body: JSON.stringify({ sessionId, message: fullMessage }),
       })
 
       if (!res.ok) throw new Error('Chat request failed')
@@ -505,10 +557,42 @@ export default function ChatPage() {
         {/* Input Area */}
         <div className="border-t bg-card/80 backdrop-blur-sm px-4 py-3">
           <div className="mx-auto max-w-3xl">
+            {/* Attached File Preview */}
+            {attachedFile && (
+              <div className="mb-2 flex items-center gap-2 rounded-lg border bg-accent/50 px-3 py-2 text-sm animate-fade-in-scale">
+                <FileText className="h-4 w-4 text-primary flex-shrink-0" />
+                <span className="flex-1 truncate text-xs font-medium">{attachedFile.name}</span>
+                <button onClick={() => setAttachedFile(null)} className="rounded p-0.5 hover:bg-accent">
+                  <X className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+              </div>
+            )}
+
             <div ref={inputContainerRef} className="relative flex items-end gap-2 rounded-xl border bg-background p-2 shadow-sm focus-within:ring-1 focus-within:ring-ring transition-shadow">
+              {/* File Upload Button */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.docx,.pptx,.txt,.md"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={streaming || uploading}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50"
+                title="Upload PDF, DOCX, or PPTX"
+              >
+                {uploading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Paperclip className="h-4 w-4" />
+                )}
+              </button>
+
               <textarea
                 ref={textareaRef}
-                placeholder="Message Setter..."
+                placeholder={attachedFile ? 'Ask about the file, or just send...' : 'Message Setter...'}
                 value={input}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
@@ -520,14 +604,14 @@ export default function ChatPage() {
               <Button
                 size="icon"
                 onClick={() => handleSend()}
-                disabled={streaming || !input.trim()}
+                disabled={streaming || (!input.trim() && !attachedFile)}
                 className="h-8 w-8 shrink-0 rounded-lg"
               >
                 <Send className="h-3.5 w-3.5" />
               </Button>
             </div>
             <p className="mt-1.5 text-center text-[10px] text-muted-foreground">
-              Setter uses AI to help you learn. Always verify important information with your teachers.
+              Upload PDFs, PowerPoints, or Word docs. Setter will read and help you study them.
             </p>
           </div>
         </div>
