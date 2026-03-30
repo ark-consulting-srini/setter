@@ -29,37 +29,22 @@ export default function QuizPlayerPage() {
 
   useEffect(() => {
     async function load() {
-      // Fetch quiz set and questions
-      const res = await fetch(`/api/quiz/sets`)
-      if (!res.ok) return
-      const { sets } = await res.json()
+      const [setsRes, questionsRes] = await Promise.all([
+        fetch('/api/quiz/sets'),
+        fetch(`/api/quiz/questions?setId=${id}`),
+      ])
+
+      if (!setsRes.ok || !questionsRes.ok) return
+
+      const { sets } = await setsRes.json()
       const set = sets.find((s: QuizSet) => s.id === id)
-      if (!set) return
+      const questions = await questionsRes.json()
 
-      // Fetch questions (we need a dedicated endpoint, but for now use the generate response pattern)
-      // Let's add a simple GET to the sets API
-      const qRes = await fetch(`/api/quiz/sets?setId=${id}`)
-      if (qRes.ok) {
-        const qData = await qRes.json()
-        // Questions come from a separate query
+      if (set) {
+        setData({ quizSet: set, questions: questions ?? [] })
       }
-
-      // Simpler: fetch questions directly via Supabase client-side
-      setData({ quizSet: set, questions: [] })
     }
     load()
-  }, [id])
-
-  // Fetch questions client-side via API
-  useEffect(() => {
-    async function fetchQuestions() {
-      const res = await fetch(`/api/quiz/questions?setId=${id}`)
-      if (res.ok) {
-        const questions = await res.json()
-        setData((prev) => prev ? { ...prev, questions } : null)
-      }
-    }
-    fetchQuestions()
   }, [id])
 
   const question = data?.questions[currentIndex]
