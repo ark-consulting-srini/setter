@@ -2,20 +2,22 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
-
 const ALLOWED_EXTENSIONS = ['.pdf', '.docx', '.pptx', '.txt', '.md']
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 async function extractTextFromPdf(buffer: Buffer): Promise<string> {
   try {
     const mod = await import('pdf-parse') as any
-    const parser = mod.PDFParse ?? mod.default ?? mod
-    if (typeof parser === 'function') {
-      const data = await parser(buffer)
-      return data.text?.trim() ?? ''
+    const PDFParse = mod.PDFParse ?? mod.default?.PDFParse
+    if (PDFParse) {
+      const parser = new PDFParse({})
+      await parser.load(buffer)
+      const text = await parser.getText()
+      return typeof text === 'string' ? text.trim() : String(text).trim()
     }
-    return '[Could not parse PDF — try a different file]'
-  } catch {
+    return '[Could not parse PDF — unsupported parser version]'
+  } catch (e) {
+    console.error('PDF parse error:', e)
     return '[Could not extract text from this PDF]'
   }
 }
@@ -54,19 +56,13 @@ async function extractTextFromPptx(buffer: Buffer): Promise<string> {
 
 async function extractText(buffer: Buffer, fileName: string): Promise<string> {
   const ext = fileName.toLowerCase().split('.').pop()
-
   switch (ext) {
-    case 'pdf':
-      return extractTextFromPdf(buffer)
-    case 'docx':
-      return extractTextFromDocx(buffer)
-    case 'pptx':
-      return extractTextFromPptx(buffer)
+    case 'pdf': return extractTextFromPdf(buffer)
+    case 'docx': return extractTextFromDocx(buffer)
+    case 'pptx': return extractTextFromPptx(buffer)
     case 'txt':
-    case 'md':
-      return buffer.toString('utf-8').trim()
-    default:
-      return '[Unsupported file format]'
+    case 'md': return buffer.toString('utf-8').trim()
+    default: return '[Unsupported file format]'
   }
 }
 
@@ -97,10 +93,8 @@ export async function POST(req: Request) {
   try {
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
-
     const extractedText = await extractText(buffer, file.name)
 
-    // Truncate if too long (keep first ~8000 chars to fit in context window)
     const maxChars = 8000
     const truncated = extractedText.length > maxChars
     const content = truncated
