@@ -10,15 +10,22 @@ export async function POST(req: Request) {
   const body: SubmitQuizRequest = await req.json()
   const { quizSetId, mode, responses, totalTimeSeconds } = body
 
-  // Fetch correct answers
+  // Fetch full question data (needed for knowledge base)
   const questionIds = responses.map((r) => r.questionId)
   const { data: questions } = await supabase
     .from('quiz_questions')
-    .select('id, correct_answer, question_type')
+    .select('id, correct_answer, question_type, question_text, explanation, quiz_set_id')
     .in('id', questionIds)
 
+  // Fetch quiz set for subject info
+  const { data: quizSetData } = await supabase
+    .from('quiz_sets')
+    .select('subject, description')
+    .eq('id', quizSetId)
+    .single()
+
   const answerMap = new Map(
-    (questions ?? []).map((q) => [q.id, { answer: q.correct_answer, type: q.question_type }])
+    (questions ?? []).map((q) => [q.id, { answer: q.correct_answer, type: q.question_type, text: q.question_text, explanation: q.explanation, setId: q.quiz_set_id }])
   )
 
   // Grade responses
@@ -107,6 +114,62 @@ export async function POST(req: Request) {
           last_reviewed_at: new Date().toISOString(),
         })
         .eq('id', card.id)
+    }
+  }
+
+  // Update Knowledge Base — track every question, especially wrong ones
+  for (const r of gradedResponses) {
+    const qData = answerMap.get(r.question_id)
+    if (!qData) continue
+
+    // Check if this question already exists in knowledge base
+    const { data: existing } = await supabase
+      .from('knowledge_entries')
+      .select('id, times_seen, times_correct, times_incorrect')
+      .eq('user_id', user.id)
+      .eq('source_question_id', r.question_id)
+      .single()
+
+    if (existing) {
+      // Update existing entry
+      const newSeen = existing.times_seen + 1
+      const newCorrect = existing.times_correct + (r.is_correct ? 1 : 0)
+      const newIncorrect = existing.times_incorrect + (r.is_correct ? 0 : 1)
+      const masteryScore = newSeen > 0 ? newCorrect / newSeen : 0
+
+      await supabase
+        .from('knowledge_entries')
+        .update({
+          times_seen: newSeen,
+          times_correct: newCorrect,
+          times_incorrect: newIncorrect,
+          mastery_score: masteryScore,
+          is_mastered: masteryScore >= 0.8 && newSeen >= 3,
+          user_answer: r.user_answer,
+          last_tested_at: new Date().toISOString(),
+        })
+        .eq('id', existing.id)
+    } else {
+      // Create new knowledge entry
+      await supabase
+        .from('knowledge_entries')
+        .insert({
+          user_id: user.id,
+          subject: quizSetData?.subject ?? 'Unknown',
+          topic: quizSetData?.description ?? null,
+          question_text: qData.text,
+          correct_answer: qData.answer,
+          user_answer: r.user_answer,
+          explanation: qData.explanation,
+          is_mastered: false,
+          times_seen: 1,
+          times_correct: r.is_correct ? 1 : 0,
+          times_incorrect: r.is_correct ? 0 : 1,
+          mastery_score: r.is_correct ? 1.0 : 0.0,
+          source_quiz_set_id: quizSetId,
+          source_question_id: r.question_id,
+          last_tested_at: new Date().toISOString(),
+        })
     }
   }
 

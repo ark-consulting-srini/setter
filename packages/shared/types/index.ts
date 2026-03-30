@@ -289,6 +289,27 @@ export interface SubmitQuizRequest {
   totalTimeSeconds: number
 }
 
+export interface KnowledgeEntry {
+  id: string
+  user_id: string
+  subject: string
+  topic: string | null
+  question_text: string
+  correct_answer: string
+  user_answer: string | null
+  explanation: string | null
+  is_mastered: boolean
+  times_seen: number
+  times_correct: number
+  times_incorrect: number
+  mastery_score: number
+  source_quiz_set_id: string | null
+  source_question_id: string | null
+  last_tested_at: string
+  created_at: string
+  updated_at: string
+}
+
 export const ROMA_SUBJECTS = [
   'AP World History',
   'Algebra 2',
