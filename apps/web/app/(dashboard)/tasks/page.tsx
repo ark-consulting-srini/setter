@@ -61,7 +61,7 @@ export default function TasksPage() {
   const [recurrence, setRecurrence] = useState('none')
   const [customDays, setCustomDays] = useState<number[]>([])
   const [recurWeeks, setRecurWeeks] = useState(4)
-  const [view, setView] = useState<'calendar' | 'list'>('calendar')
+  const [view, setView] = useState<'calendar' | 'list' | 'recurring'>('calendar')
   const [selectMode, setSelectMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
@@ -154,12 +154,15 @@ export default function TasksPage() {
     setShowRecurring(false)
   }
 
-  async function completeTask(id: string) {
-    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status: 'completed' as const } : t)))
+  async function toggleTask(id: string) {
+    const task = tasks.find(t => t.id === id)
+    if (!task) return
+    const newStatus = task.status === 'completed' ? 'pending' : 'completed'
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status: newStatus as Task['status'], completed_at: newStatus === 'completed' ? new Date().toISOString() : null } : t)))
     await fetch(`/api/tasks/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'completed' }),
+      body: JSON.stringify({ status: newStatus, completed_at: newStatus === 'completed' ? new Date().toISOString() : null }),
     })
   }
 
@@ -230,6 +233,7 @@ export default function TasksPage() {
           <div className="flex items-center gap-1 rounded-lg border p-0.5">
             <button onClick={() => setView('calendar')} className={cn('rounded-md px-3 py-1 text-xs font-medium', view === 'calendar' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground')}>Grid</button>
             <button onClick={() => setView('list')} className={cn('rounded-md px-3 py-1 text-xs font-medium', view === 'list' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground')}>List</button>
+            <button onClick={() => setView('recurring')} className={cn('rounded-md px-3 py-1 text-xs font-medium', view === 'recurring' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground')}>Recurring</button>
           </div>
         </div>
       </div>
@@ -294,7 +298,7 @@ export default function TasksPage() {
                             {selectMode ? (
                               <input type="checkbox" checked={selectedIds.has(task.id)} onChange={() => toggleSelect(task.id)} className="mt-0.5 h-3 w-3 flex-shrink-0" />
                             ) : (
-                              <button onClick={() => completeTask(task.id)} className="mt-0.5 h-3 w-3 rounded-sm border border-muted-foreground/30 flex-shrink-0 hover:border-primary" />
+                              <button onClick={() => toggleTask(task.id)} className="mt-0.5 h-3 w-3 rounded-sm border border-muted-foreground/30 flex-shrink-0 hover:border-primary" />
                             )}
                             <span className="flex-1">{task.title}</span>
                             {!selectMode && <button onClick={() => deleteTask(task.id)} className="opacity-0 group-hover:opacity-100 text-muted-foreground/40 hover:text-destructive text-[10px]">×</button>}
@@ -302,10 +306,10 @@ export default function TasksPage() {
                         </div>
                       ))}
                       {completed.map((task) => (
-                        <div key={task.id} className="rounded-md px-1.5 py-1 text-[11px] leading-tight text-muted-foreground/40 line-through">
+                        <div key={task.id} className="group rounded-md px-1.5 py-1 text-[11px] leading-tight text-muted-foreground/40 cursor-pointer hover:bg-accent/30" onClick={() => toggleTask(task.id)}>
                           <div className="flex items-start gap-1">
-                            <Check className="mt-0.5 h-3 w-3 flex-shrink-0 text-emerald-400" />
-                            <span className="flex-1 line-clamp-1">{task.title}</span>
+                            <Check className="mt-0.5 h-3 w-3 flex-shrink-0 text-emerald-400 group-hover:text-amber-400" />
+                            <span className="flex-1 line-clamp-1 line-through group-hover:no-underline">{task.title}</span>
                           </div>
                         </div>
                       ))}
@@ -342,7 +346,7 @@ export default function TasksPage() {
                   <div className="space-y-1">
                     {dayTasks.map((task) => (
                       <div key={task.id} className={cn('flex items-center gap-2 rounded-lg border-l-3 px-3 py-2 text-sm', task.status === 'completed' ? 'opacity-50' : '', PRIORITY_BG[task.priority])}>
-                        <button onClick={() => completeTask(task.id)} disabled={task.status === 'completed'} className={cn('h-4 w-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center', task.status === 'completed' ? 'bg-emerald-400 border-emerald-400' : 'border-muted-foreground/30')}>
+                        <button onClick={() => toggleTask(task.id)} className={cn('h-4 w-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors', task.status === 'completed' ? 'bg-emerald-400 border-emerald-400 hover:bg-amber-400 hover:border-amber-400' : 'border-muted-foreground/30 hover:border-primary')}>
                           {task.status === 'completed' && <Check className="h-2.5 w-2.5 text-white" />}
                         </button>
                         <span className={cn('flex-1', task.status === 'completed' && 'line-through text-muted-foreground')}>{task.title}</span>
@@ -358,6 +362,74 @@ export default function TasksPage() {
           })}
         </div>
       )}
+
+      {/* Recurring View */}
+      {view === 'recurring' && (() => {
+        // Group tasks by title to find recurring patterns
+        const titleGroups: Record<string, Task[]> = {}
+        for (const t of tasks) {
+          // Strip time prefix to group (e.g., "21:00 — Review" and "21:00 — Review" are same)
+          const baseTitle = t.title.replace(/^\d{1,2}:\d{2}\s*[—–-]\s*/, '')
+          if (!titleGroups[baseTitle]) titleGroups[baseTitle] = []
+          titleGroups[baseTitle].push(t)
+        }
+        const recurring = Object.entries(titleGroups).filter(([_, tasks]) => tasks.length >= 2).sort((a, b) => b[1].length - a[1].length)
+
+        return (
+          <div className="space-y-4">
+            <p className="text-xs text-muted-foreground">{recurring.length} recurring task group{recurring.length !== 1 ? 's' : ''}</p>
+            {recurring.length > 0 ? recurring.map(([title, groupTasks]) => {
+              const pendingCount = groupTasks.filter(t => t.status !== 'completed').length
+              const allIds = groupTasks.map(t => t.id)
+              return (
+                <Card key={title}>
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h4 className="text-sm font-semibold">{title}</h4>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {groupTasks.length} occurrences • {pendingCount} pending
+                        </p>
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {groupTasks.slice(0, 8).map(t => (
+                            <Badge key={t.id} variant="outline" className={cn('text-[9px]', t.status === 'completed' ? 'line-through opacity-50' : '')}>
+                              {t.due_date ? new Date(t.due_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—'}
+                            </Badge>
+                          ))}
+                          {groupTasks.length > 8 && <Badge variant="outline" className="text-[9px]">+{groupTasks.length - 8} more</Badge>}
+                        </div>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button variant="outline" size="sm" className="text-xs" onClick={() => {
+                          const futureIds = groupTasks.filter(t => t.status !== 'completed').map(t => t.id)
+                          setSelectedIds(new Set(futureIds))
+                          setSelectMode(true)
+                          setView('calendar')
+                        }}>
+                          Select All Pending
+                        </Button>
+                        <Button variant="destructive" size="sm" className="text-xs" onClick={async () => {
+                          if (!confirm(`Delete all ${groupTasks.length} occurrences of "${title}"?`)) return
+                          setTasks(prev => prev.filter(t => !allIds.includes(t.id)))
+                          for (const id of allIds) await fetch(`/api/tasks/${id}`, { method: 'DELETE' })
+                        }}>
+                          <Trash2 className="mr-1 h-3 w-3" /> Delete All
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            }) : (
+              <div className="text-center py-12">
+                <Repeat className="mx-auto h-10 w-10 text-muted-foreground/30 mb-3" />
+                <p className="text-sm text-muted-foreground">No recurring tasks found</p>
+                <p className="text-xs text-muted-foreground mt-1">Tasks with the same name appearing multiple times will show here</p>
+              </div>
+            )}
+          </div>
+        )
+      })()}
 
       {/* Add Task Modal */}
       {showAddModal && (
