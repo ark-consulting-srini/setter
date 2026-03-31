@@ -8,7 +8,22 @@ const anthropic = new Anthropic({
 })
 
 export async function POST(req: Request) {
-  const supabase = createClient()
+  // Support both cookie auth (web) and Bearer token auth (mobile)
+  const authHeader = req.headers.get('Authorization')
+  let supabase: ReturnType<typeof createClient>
+
+  if (authHeader?.startsWith('Bearer ')) {
+    // Mobile app — use token-based auth
+    const { createClient: createJsClient } = await import('@supabase/supabase-js')
+    supabase = createJsClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { global: { headers: { Authorization: authHeader } } }
+    ) as unknown as ReturnType<typeof createClient>
+  } else {
+    // Web app — use cookie auth
+    supabase = createClient()
+  }
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
