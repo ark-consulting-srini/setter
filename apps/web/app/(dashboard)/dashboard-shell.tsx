@@ -17,6 +17,9 @@ import {
   BrainCircuit,
   Brain,
   GraduationCap,
+  FileText,
+  BarChart3,
+  Settings,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
@@ -32,8 +35,11 @@ const NAV_ITEMS = [
   { href: '/knowledge', label: 'Knowledge Base', icon: Brain },
   { href: '/achievements', label: 'Trophy Case', icon: Trophy },
   { href: '/college', label: 'College Research', icon: GraduationCap },
+  { href: '/files', label: 'My Files', icon: FileText },
   { href: '/goals', label: 'Goals', icon: Target },
   { href: '/portfolio', label: 'Portfolio', icon: User },
+  { href: '/analytics', label: 'Analytics', icon: BarChart3 },
+  { href: '/settings', label: 'Settings', icon: Settings },
 ] as const
 
 interface DashboardShellProps {

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Plus, Check, ChevronLeft, ChevronRight, Repeat, Clock } from 'lucide-react'
+import { Plus, Check, ChevronLeft, ChevronRight, Repeat, Clock, Trash2, CheckSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -62,6 +62,8 @@ export default function TasksPage() {
   const [customDays, setCustomDays] = useState<number[]>([])
   const [recurWeeks, setRecurWeeks] = useState(4)
   const [view, setView] = useState<'calendar' | 'list'>('calendar')
+  const [selectMode, setSelectMode] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
   const weekDates = getWeekDates(weekOffset)
   const weekStart = weekDates[0]
@@ -166,6 +168,24 @@ export default function TasksPage() {
     await fetch(`/api/tasks/${id}`, { method: 'DELETE' })
   }
 
+  function toggleSelect(id: string) {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id); else next.add(id)
+      return next
+    })
+  }
+
+  async function bulkDelete() {
+    const ids = [...selectedIds]
+    setTasks(prev => prev.filter(t => !selectedIds.has(t.id)))
+    setSelectedIds(new Set())
+    setSelectMode(false)
+    for (const id of ids) {
+      await fetch(`/api/tasks/${id}`, { method: 'DELETE' })
+    }
+  }
+
   const tasksByDate: Record<string, Task[]> = {}
   for (const t of tasks) {
     if (t.due_date) {
@@ -189,10 +209,24 @@ export default function TasksPage() {
           <p className="text-sm text-muted-foreground">Your week at a glance</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => { setShowRecurring(true); setShowAddModal({ date: dateToStr(new Date()) }) }}>
-            <Repeat className="mr-1 h-3.5 w-3.5" />
-            Recurring
-          </Button>
+          {selectMode ? (
+            <>
+              <span className="text-xs text-muted-foreground">{selectedIds.size} selected</span>
+              <Button variant="destructive" size="sm" onClick={bulkDelete} disabled={selectedIds.size === 0}>
+                <Trash2 className="mr-1 h-3.5 w-3.5" /> Delete ({selectedIds.size})
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => { setSelectMode(false); setSelectedIds(new Set()) }}>Cancel</Button>
+            </>
+          ) : (
+            <>
+              <Button variant="outline" size="sm" onClick={() => setSelectMode(true)}>
+                <CheckSquare className="mr-1 h-3.5 w-3.5" /> Select
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => { setShowRecurring(true); setShowAddModal({ date: dateToStr(new Date()) }) }}>
+                <Repeat className="mr-1 h-3.5 w-3.5" /> Recurring
+              </Button>
+            </>
+          )}
           <div className="flex items-center gap-1 rounded-lg border p-0.5">
             <button onClick={() => setView('calendar')} className={cn('rounded-md px-3 py-1 text-xs font-medium', view === 'calendar' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground')}>Grid</button>
             <button onClick={() => setView('list')} className={cn('rounded-md px-3 py-1 text-xs font-medium', view === 'list' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground')}>List</button>
@@ -255,11 +289,15 @@ export default function TasksPage() {
                   >
                     <div className="space-y-1 flex-1">
                       {pending.map((task) => (
-                        <div key={task.id} className={cn('group rounded-md border-l-2 px-1.5 py-1.5 text-[11px] leading-tight transition-colors hover:bg-accent/50', PRIORITY_BG[task.priority])}>
+                        <div key={task.id} className={cn('group rounded-md border-l-2 px-1.5 py-1.5 text-[11px] leading-tight transition-colors hover:bg-accent/50', PRIORITY_BG[task.priority], selectMode && selectedIds.has(task.id) && 'ring-1 ring-primary bg-primary/10')}>
                           <div className="flex items-start gap-1">
-                            <button onClick={() => completeTask(task.id)} className="mt-0.5 h-3 w-3 rounded-sm border border-muted-foreground/30 flex-shrink-0 hover:border-primary" />
+                            {selectMode ? (
+                              <input type="checkbox" checked={selectedIds.has(task.id)} onChange={() => toggleSelect(task.id)} className="mt-0.5 h-3 w-3 flex-shrink-0" />
+                            ) : (
+                              <button onClick={() => completeTask(task.id)} className="mt-0.5 h-3 w-3 rounded-sm border border-muted-foreground/30 flex-shrink-0 hover:border-primary" />
+                            )}
                             <span className="flex-1">{task.title}</span>
-                            <button onClick={() => deleteTask(task.id)} className="opacity-0 group-hover:opacity-100 text-muted-foreground/40 hover:text-destructive text-[10px]">×</button>
+                            {!selectMode && <button onClick={() => deleteTask(task.id)} className="opacity-0 group-hover:opacity-100 text-muted-foreground/40 hover:text-destructive text-[10px]">×</button>}
                           </div>
                         </div>
                       ))}
