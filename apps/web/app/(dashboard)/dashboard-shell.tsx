@@ -20,6 +20,7 @@ import {
   FileText,
   BarChart3,
   Settings,
+  CalendarDays,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
@@ -29,6 +30,7 @@ import { Separator } from '@/components/ui/separator'
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
   { href: '/tasks', label: 'Game Plan', icon: CheckSquare },
+  { href: '/calendar', label: 'Calendar', icon: CalendarDays },
   { href: '/journal', label: 'Playbook', icon: BookOpen },
   { href: '/chat', label: 'Talk to Setter', icon: MessageCircle },
   { href: '/quiz', label: 'Quiz Zone', icon: BrainCircuit },
