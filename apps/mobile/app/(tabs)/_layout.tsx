@@ -7,8 +7,8 @@ import * as Haptics from 'expo-haptics'
 
 type IoniconsName = ComponentProps<typeof Ionicons>['name']
 
-const CRIMSON = '#A5243D'
-const GOLD = '#D4A843'
+const PINK = '#E8A0BF'
+const PINK_DARK = '#C77398'
 const SLATE_500 = '#64748b'
 
 export default function TabsLayout() {
@@ -16,7 +16,7 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: CRIMSON,
+        tabBarActiveTintColor: PINK_DARK,
         tabBarInactiveTintColor: SLATE_500,
         tabBarStyle: {
           backgroundColor: '#ffffff',
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: GOLD,
+    backgroundColor: PINK,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,

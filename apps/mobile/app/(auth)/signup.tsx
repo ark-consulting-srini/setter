@@ -1,106 +1,67 @@
 import React, { useState } from 'react'
-import {
-  View,
-  Text,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Pressable,
-} from 'react-native'
-import { useRouter } from 'expo-router'
+import { View, Text, Pressable, Alert, KeyboardAvoidingView, Platform, ScrollView, TextInput, ActivityIndicator, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useRouter } from 'expo-router'
 import { useAuth } from '../../lib/auth-context'
-import { Input } from '../../components/Input'
-import { Button } from '../../components/Button'
 
-export default function SignUpScreen() {
-  const [fullName, setFullName] = useState('')
+const PINK = '#E8A0BF'
+
+export default function SignupScreen() {
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [submitting, setSubmitting] = useState(false)
-
+  const [loading, setLoading] = useState(false)
   const { signUp } = useAuth()
   const router = useRouter()
   const insets = useSafeAreaInsets()
 
-  const handleSignUp = async () => {
-    if (!fullName.trim() || !email.trim() || !password.trim()) return
-    setSubmitting(true)
-    await signUp(email.trim(), password, fullName.trim())
-    setSubmitting(false)
+  async function handleSignup() {
+    if (!name || !email || !password) { Alert.alert('Please fill in all fields'); return }
+    setLoading(true)
+    try {
+      await signUp(email, password)
+      Alert.alert('Check your email', 'We sent you a confirmation link.')
+    } catch (e) {
+      Alert.alert('Signup failed', e instanceof Error ? e.message : 'Unknown error')
+    } finally { setLoading(false) }
   }
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      className="flex-1 bg-slate-50"
-    >
-      <ScrollView
-        contentContainerStyle={{
-          flexGrow: 1,
-          paddingTop: insets.top + 60,
-          paddingBottom: insets.bottom + 20,
-          paddingHorizontal: 24,
-        }}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View className="mb-10">
-          <Text className="text-4xl font-bold text-violet-600 mb-2">Join Setter</Text>
-          <Text className="text-lg text-slate-500">
-            Set up your account and start winning
-          </Text>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={[s.flex, { backgroundColor: '#FFF5F7' }]}>
+      <ScrollView contentContainerStyle={[s.scroll, { paddingTop: insets.top + 60, paddingBottom: insets.bottom + 20 }]}>
+        <View style={{ marginBottom: 40 }}>
+          <Text style={s.logo}>Join Setter</Text>
+          <Text style={s.tagline}>Your personal companion</Text>
         </View>
 
-        <View className="mb-6">
-          <Input
-            label="Full Name"
-            placeholder="Roma Reddy"
-            value={fullName}
-            onChangeText={setFullName}
-            autoCapitalize="words"
-            autoComplete="name"
-            textContentType="name"
-          />
+        <TextInput style={s.input} placeholder="Full Name" placeholderTextColor="#94a3b8" value={name} onChangeText={setName} autoComplete="name" />
+        <TextInput style={s.input} placeholder="Email" placeholderTextColor="#94a3b8" value={email} onChangeText={setEmail}
+          keyboardType="email-address" autoCapitalize="none" autoComplete="email" />
+        <TextInput style={s.input} placeholder="Password" placeholderTextColor="#94a3b8" value={password} onChangeText={setPassword}
+          secureTextEntry autoComplete="new-password" />
 
-          <Input
-            label="Email"
-            placeholder="roma@example.com"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            autoComplete="email"
-            keyboardType="email-address"
-            textContentType="emailAddress"
-          />
+        <Pressable onPress={handleSignup} disabled={loading} style={[s.button, loading && { opacity: 0.5 }]}>
+          {loading ? <ActivityIndicator color="#fff" /> : <Text style={s.buttonText}>Sign Up</Text>}
+        </Pressable>
 
-          <Input
-            label="Password"
-            placeholder="At least 6 characters"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoComplete="new-password"
-            textContentType="newPassword"
-          />
-        </View>
-
-        <Button
-          title="Sign Up"
-          onPress={handleSignUp}
-          loading={submitting}
-          disabled={!fullName.trim() || !email.trim() || !password.trim()}
-        />
-
-        <View className="flex-row justify-center mt-6">
-          <Text className="text-slate-500">Already have an account? </Text>
-          <Pressable
-            onPress={() => router.back()}
-            hitSlop={8}
-          >
-            <Text className="text-violet-600 font-semibold">Log in</Text>
+        <View style={s.footer}>
+          <Text style={{ color: '#64748b' }}>Already have an account? </Text>
+          <Pressable onPress={() => router.push('/(auth)/login')}>
+            <Text style={{ color: PINK, fontWeight: '600' }}>Log in</Text>
           </Pressable>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
   )
 }
+
+const s = StyleSheet.create({
+  flex: { flex: 1 },
+  scroll: { paddingHorizontal: 24 },
+  logo: { fontSize: 36, fontWeight: '700', color: PINK },
+  tagline: { fontSize: 16, color: '#64748b', marginTop: 4 },
+  input: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16, color: '#1e293b', marginBottom: 12, minHeight: 48 },
+  button: { backgroundColor: PINK, borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 8, minHeight: 48 },
+  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 24 },
+})

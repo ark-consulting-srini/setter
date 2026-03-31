@@ -1,7 +1,5 @@
-import '../global.css'
-
 import React from 'react'
-import { ActivityIndicator, View } from 'react-native'
+import { ActivityIndicator, View, StyleSheet } from 'react-native'
 import { Slot, useRouter, useSegments } from 'expo-router'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { StatusBar } from 'expo-status-bar'
@@ -26,8 +24,8 @@ function RootNavigator() {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-slate-50">
-        <ActivityIndicator size="large" color="#A5243D" />
+      <View style={styles.loading}>
+        <ActivityIndicator size="large" color="#E8A0BF" />
       </View>
     )
   }
@@ -45,3 +43,12 @@ export default function RootLayout() {
     </SafeAreaProvider>
   )
 }
+
+const styles = StyleSheet.create({
+  loading: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFF5F7',
+  },
+})
