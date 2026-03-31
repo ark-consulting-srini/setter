@@ -28,25 +28,27 @@ export async function POST(req: Request) {
     (questions ?? []).map((q) => [q.id, { answer: q.correct_answer, type: q.question_type, text: q.question_text, explanation: q.explanation, setId: q.quiz_set_id }])
   )
 
-  // Grade responses
-  let correctCount = 0
+  // Grade responses — supports full (1.0), half (0.5), and zero (0) points
+  let totalPoints = 0
   const gradedResponses = responses.map((r) => {
     const correct = answerMap.get(r.questionId)
-    const isCorrect = correct
-      ? checkAnswer(r.answer, correct.answer, correct.type)
-      : false
-    if (isCorrect) correctCount++
+    if (!correct) return { question_id: r.questionId, user_id: user.id, user_answer: r.answer, is_correct: false, points: 0, time_spent_seconds: r.timeSpentSeconds }
+
+    const result = checkAnswer(r.answer, correct.answer, correct.type)
+    totalPoints += result.points
     return {
       question_id: r.questionId,
       user_id: user.id,
       user_answer: r.answer,
-      is_correct: isCorrect,
+      is_correct: result.points >= 0.5, // half point or more counts as "correct" for knowledge base
+      points: result.points,
       time_spent_seconds: r.timeSpentSeconds,
     }
   })
 
+  const correctCount = Math.round(totalPoints)
   const score = responses.length > 0
-    ? Math.round((correctCount / responses.length) * 100)
+    ? Math.round((totalPoints / responses.length) * 100)
     : 0
 
   // Create attempt
@@ -195,23 +197,54 @@ export async function POST(req: Request) {
       questionId: r.question_id,
       userAnswer: r.user_answer,
       isCorrect: r.is_correct,
+      points: r.points,
     })),
   })
 }
 
-function checkAnswer(userAnswer: string, correctAnswer: string, questionType: string): boolean {
-  if (!userAnswer) return false
+function checkAnswer(userAnswer: string, correctAnswer: string, questionType: string): { points: number } {
+  if (!userAnswer) return { points: 0 }
   const ua = userAnswer.trim().toLowerCase()
   const ca = correctAnswer.trim().toLowerCase()
 
+  // Multiple choice and true/false: exact match only
   if (questionType === 'true_false' || questionType === 'multiple_choice') {
-    return ua === ca
+    return { points: ua === ca ? 1 : 0 }
   }
 
-  // For fill_blank and flashcard: fuzzy match
-  if (ua === ca) return true
-  // Accept if 90%+ similar (simple check)
-  if (ca.includes(ua) && ua.length > ca.length * 0.7) return true
-  if (ua.includes(ca) && ca.length > ua.length * 0.7) return true
-  return false
+  // For fill_blank and flashcard: support partial credit for typos
+  if (ua === ca) return { points: 1 }
+
+  // Check edit distance for typo detection
+  const distance = levenshtein(ua, ca)
+  const maxLen = Math.max(ua.length, ca.length)
+
+  if (maxLen === 0) return { points: 0 }
+
+  const similarity = 1 - distance / maxLen
+
+  // 90%+ similarity = full point (minor typo like 1 char)
+  if (similarity >= 0.9) return { points: 1 }
+  // 75%+ similarity = half point (typo but close enough)
+  if (similarity >= 0.75) return { points: 0.5 }
+  // Contains check: if answer is a substring
+  if (ca.includes(ua) && ua.length > ca.length * 0.7) return { points: 0.5 }
+  if (ua.includes(ca) && ca.length > ua.length * 0.7) return { points: 0.5 }
+
+  return { points: 0 }
+}
+
+function levenshtein(a: string, b: string): number {
+  const m = a.length, n = b.length
+  const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0))
+  for (let i = 0; i <= m; i++) dp[i][0] = i
+  for (let j = 0; j <= n; j++) dp[0][j] = j
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i][j] = a[i - 1] === b[j - 1]
+        ? dp[i - 1][j - 1]
+        : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1])
+    }
+  }
+  return dp[m][n]
 }
