@@ -61,7 +61,9 @@ export default function TasksPage() {
   const [recurrence, setRecurrence] = useState('none')
   const [customDays, setCustomDays] = useState<number[]>([])
   const [recurWeeks, setRecurWeeks] = useState(4)
-  const [view, setView] = useState<'calendar' | 'list' | 'recurring'>('calendar')
+  const [view, setView] = useState<'calendar' | 'list' | 'recurring' | 'month'>('calendar')
+  const [monthDate, setMonthDate] = useState(new Date())
+  const [selectedDay, setSelectedDay] = useState<string | null>(null)
   const [selectMode, setSelectMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
@@ -234,6 +236,7 @@ export default function TasksPage() {
             <button onClick={() => setView('calendar')} className={cn('rounded-md px-3 py-1 text-xs font-medium', view === 'calendar' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground')}>Grid</button>
             <button onClick={() => setView('list')} className={cn('rounded-md px-3 py-1 text-xs font-medium', view === 'list' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground')}>List</button>
             <button onClick={() => setView('recurring')} className={cn('rounded-md px-3 py-1 text-xs font-medium', view === 'recurring' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground')}>Recurring</button>
+            <button onClick={() => setView('month')} className={cn('rounded-md px-3 py-1 text-xs font-medium', view === 'month' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground')}>Month</button>
           </div>
         </div>
       </div>
@@ -426,6 +429,96 @@ export default function TasksPage() {
                 <p className="text-sm text-muted-foreground">No recurring tasks found</p>
                 <p className="text-xs text-muted-foreground mt-1">Tasks with the same name appearing multiple times will show here</p>
               </div>
+            )}
+          </div>
+        )
+      })()}
+
+      {/* Month Calendar View */}
+      {view === 'month' && (() => {
+        const mYear = monthDate.getFullYear()
+        const mMonth = monthDate.getMonth()
+        const firstDay = new Date(mYear, mMonth, 1).getDay()
+        const daysInMonth = new Date(mYear, mMonth + 1, 0).getDate()
+        const todayStr = dateToStr(new Date())
+        const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December']
+        const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
+
+        const cells: (number | null)[] = []
+        for (let i = 0; i < firstDay; i++) cells.push(null)
+        for (let i = 1; i <= daysInMonth; i++) cells.push(i)
+        while (cells.length % 7 !== 0) cells.push(null)
+
+        const selectedDayTasks = selectedDay ? (tasksByDate[selectedDay] ?? []) : []
+
+        return (
+          <div className="space-y-4">
+            {/* Month nav */}
+            <div className="flex items-center justify-between">
+              <Button variant="ghost" size="sm" onClick={() => setMonthDate(new Date(mYear, mMonth - 1, 1))}><ChevronLeft className="h-4 w-4" /></Button>
+              <div className="text-center">
+                <p className="text-sm font-semibold">{MONTH_NAMES[mMonth]} {mYear}</p>
+                {(mMonth !== new Date().getMonth() || mYear !== new Date().getFullYear()) && (
+                  <button onClick={() => { setMonthDate(new Date()); setSelectedDay(todayStr) }} className="text-[10px] text-primary hover:underline">Today</button>
+                )}
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => setMonthDate(new Date(mYear, mMonth + 1, 1))}><ChevronRight className="h-4 w-4" /></Button>
+            </div>
+
+            {/* Grid */}
+            <div className="grid grid-cols-7 gap-1">
+              {DAY_NAMES.map(d => <div key={d} className="text-center text-[10px] font-medium text-muted-foreground py-1">{d}</div>)}
+
+              {cells.map((day, idx) => {
+                if (day === null) return <div key={idx} className="min-h-[72px]" />
+                const ds = dateToStr(new Date(mYear, mMonth, day))
+                const dt = tasksByDate[ds] ?? []
+                const pending = dt.filter(t => t.status !== 'completed')
+                const done = dt.filter(t => t.status === 'completed')
+
+                return (
+                  <div key={idx} onClick={() => { setSelectedDay(ds); setShowAddModal(null) }}
+                    className={cn('min-h-[72px] rounded-lg border p-1 cursor-pointer transition-all hover:shadow-sm',
+                      ds === todayStr ? 'border-primary/40 bg-primary/5' : 'bg-card',
+                      ds === selectedDay && 'ring-2 ring-primary/30'
+                    )}>
+                    <div className={cn('text-[11px] font-medium', ds === todayStr ? 'text-primary font-bold' : '')}>{day}</div>
+                    {dt.slice(0, 3).map(t => (
+                      <div key={t.id} className="flex items-center gap-0.5 mt-0.5">
+                        <span className={cn('h-1.5 w-1.5 rounded-full flex-shrink-0', t.status === 'completed' ? 'bg-muted-foreground/30' : PRIORITY_COLORS[t.priority])} />
+                        <span className={cn('text-[8px] truncate', t.status === 'completed' && 'line-through text-muted-foreground/40')}>{t.title.replace(/^\d{1,2}:\d{2}\s*[—–-]\s*/, '')}</span>
+                      </div>
+                    ))}
+                    {dt.length > 3 && <span className="text-[7px] text-muted-foreground">+{dt.length - 3}</span>}
+                    {dt.length > 0 && (
+                      <div className="flex gap-0.5 mt-0.5">
+                        {pending.length > 0 && <span className="text-[7px] bg-pink-100 text-pink-600 rounded px-0.5">{pending.length}</span>}
+                        {done.length > 0 && <span className="text-[7px] bg-emerald-100 text-emerald-600 rounded px-0.5">{done.length}✓</span>}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Selected day detail */}
+            {selectedDay && (
+              <Card className="animate-slide-up">
+                <CardContent className="p-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold">{new Date(selectedDay + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</h3>
+                    <Button size="sm" variant="outline" onClick={() => { setShowAddModal({ date: selectedDay }); setShowRecurring(false) }}><Plus className="mr-1 h-3 w-3" /> Add</Button>
+                  </div>
+                  {selectedDayTasks.length > 0 ? selectedDayTasks.map(task => (
+                    <div key={task.id} className={cn('flex items-center gap-2 rounded-lg px-3 py-2 text-sm border-l-3', task.status === 'completed' ? 'opacity-50' : '', PRIORITY_BG[task.priority])}>
+                      <button onClick={() => toggleTask(task.id)} className={cn('h-4 w-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center', task.status === 'completed' ? 'bg-emerald-400 border-emerald-400' : 'border-muted-foreground/30')}>
+                        {task.status === 'completed' && <Check className="h-2.5 w-2.5 text-white" />}
+                      </button>
+                      <span className={cn('flex-1', task.status === 'completed' && 'line-through text-muted-foreground')}>{task.title}</span>
+                    </div>
+                  )) : <p className="text-xs text-muted-foreground text-center py-3">No tasks</p>}
+                </CardContent>
+              </Card>
             )}
           </div>
         )
