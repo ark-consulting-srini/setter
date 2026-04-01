@@ -23,6 +23,7 @@ import {
   CalendarDays,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { CaptureButton } from './capture-button'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -165,6 +166,9 @@ export function DashboardShell({ userName, children }: DashboardShellProps) {
           {children}
         </main>
       </div>
+
+      {/* Floating capture button — appears on every page */}
+      <CaptureButton />
     </div>
   )
 }

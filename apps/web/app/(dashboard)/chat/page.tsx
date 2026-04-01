@@ -24,6 +24,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { MessageRenderer } from './message-renderer'
+import { VoiceButton } from '@/components/voice-button'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -600,6 +601,10 @@ export default function ChatPage() {
                 rows={1}
                 style={{ maxHeight: '160px' }}
                 disabled={streaming}
+              />
+              <VoiceButton
+                onTranscript={(text) => setInput(prev => prev + (prev ? ' ' : '') + text)}
+                size="sm"
               />
               <Button
                 size="icon"

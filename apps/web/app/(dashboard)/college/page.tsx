@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
+import { MessageRenderer } from '../chat/message-renderer'
 
 interface College {
   id: string; name: string; location: string; state: string; college_type: string
@@ -287,7 +288,7 @@ export default function CollegePage() {
                     {analysis.analysis.gaps.map((g, i) => <p key={i} className="text-xs text-red-800">⚠ {g}</p>)}
                   </div>
                 </div>
-                <p className="text-sm leading-relaxed whitespace-pre-line">{analysis.analysis.analysis}</p>
+                <div className="text-sm"><MessageRenderer content={analysis.analysis.analysis} role="assistant" /></div>
                 {analysis.analysis.action_items && (
                   <div className="grid gap-2 sm:grid-cols-2">
                     {Object.entries(analysis.analysis.action_items).map(([grade, actions]) => (
@@ -529,7 +530,7 @@ export default function CollegePage() {
                     <div className={cn('max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed',
                       msg.role === 'user' ? 'bg-primary text-primary-foreground rounded-br-md' : 'bg-secondary/60 rounded-bl-md'
                     )}>
-                      <p className="whitespace-pre-line">{msg.content}</p>
+                      <MessageRenderer content={msg.content} role={msg.role} />
                     </div>
                   </div>
                 ))}
