@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react'
 import { Camera, Mic, X, Loader2, Check, FileText, Calendar, Brain, StickyNote } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { track } from '@/lib/track'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
@@ -52,6 +53,7 @@ export function CaptureButton() {
       if (res.ok) {
         const data = await res.json()
         setItems(data.items.map((i: CapturedItem) => ({ ...i, saved: false })))
+        track('file_uploaded', undefined, { type: 'image_capture', items: data.items.length })
       }
     } catch {
       setItems([{ type: 'note', title: 'Could not process image', saved: false }])

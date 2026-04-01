@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { MessageRenderer } from './message-renderer'
 import { VoiceButton } from '@/components/voice-button'
+import { track } from '@/lib/track'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -145,6 +146,8 @@ export default function ChatPage() {
     const message = (messageOverride ?? input).trim()
     if (!message && !attachedFile) return
     if (streaming) return
+
+    track('chat_sent', '/chat')
 
     // Build the full message with file context
     const currentFile = attachedFile

@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import type { Task, TaskCategory, TaskPriority } from '@setter/shared/types'
+import { track } from '@/lib/track'
 
 const PRIORITY_COLORS: Record<TaskPriority, string> = {
   high: 'bg-red-400',
@@ -160,6 +161,7 @@ export default function TasksPage() {
     const task = tasks.find(t => t.id === id)
     if (!task) return
     const newStatus = task.status === 'completed' ? 'pending' : 'completed'
+    if (newStatus === 'completed') track('task_completed', '/tasks')
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status: newStatus as Task['status'], completed_at: newStatus === 'completed' ? new Date().toISOString() : null } : t)))
     await fetch(`/api/tasks/${id}`, {
       method: 'PATCH',

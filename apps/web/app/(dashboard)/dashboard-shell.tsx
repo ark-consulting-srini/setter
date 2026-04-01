@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { CaptureButton } from './capture-button'
+import { track } from '@/lib/track'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -52,6 +53,11 @@ interface DashboardShellProps {
 export function DashboardShell({ userName, children }: DashboardShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const pathname = usePathname()
+
+  // Track page views
+  useEffect(() => {
+    track('page_view', pathname)
+  }, [pathname])
   const router = useRouter()
 
   async function handleSignOut() {

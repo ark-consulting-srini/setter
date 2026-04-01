@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ArrowLeft, ArrowRight, Check, X, RotateCcw, Trophy, Clock, BrainCircuit } from 'lucide-react'
+import { track } from '@/lib/track'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -106,6 +107,7 @@ export default function QuizPlayerPage() {
       if (res.ok) {
         const result = await res.json()
         setResults(result)
+        track('quiz_taken', '/quiz', { score: result.score })
         setSubmitted(true)
       }
     } catch { /* ignore */ }
