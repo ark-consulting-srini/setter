@@ -10,7 +10,8 @@
     "./supabase/server": "./supabase/server.ts",
     "./lib/context": "./lib/context.ts",
     "./lib/prompts": "./lib/prompts.ts",
-    "./lib/achievements": "./lib/achievements.ts"
+    "./lib/achievements": "./lib/achievements.ts",
+    "./lib/ap-csp-study-guide": "./lib/ap-csp-study-guide.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",

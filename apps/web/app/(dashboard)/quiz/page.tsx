@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import type { QuizSet, QuestionType, QuizDifficulty } from '@setter/shared/types'
 import { ROMA_SUBJECTS } from '@setter/shared/types'
+import { AP_CSP_STUDY_GUIDE } from '@setter/shared/lib/ap-csp-study-guide'
 
 interface EnrichedQuizSet extends QuizSet {
   bestScore: number | null
@@ -165,7 +166,10 @@ export default function QuizPage() {
   const [apExamStyle, setApExamStyle] = useState(false)
   const [documentText, setDocumentText] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [useStudyGuide, setUseStudyGuide] = useState(false)
+  const [selectedGuideTopics, setSelectedGuideTopics] = useState<string[]>([])
   const isAP = subject.startsWith('AP ')
+  const isAPCSP = subject === 'AP CSP'
 
   useEffect(() => { fetchSets() }, [])
 
@@ -205,6 +209,7 @@ export default function QuizPage() {
           difficulty: difficulty === 'mixed' ? undefined : difficulty,
           documentText: documentText || undefined,
           apExamStyle,
+          studyGuideTopicIds: useStudyGuide && isAPCSP ? (selectedGuideTopics.length > 0 ? selectedGuideTopics : undefined) : undefined,
         }),
       })
 
@@ -215,6 +220,8 @@ export default function QuizPage() {
         setCustomTopic('')
         setDocumentText('')
         setApExamStyle(false)
+        setUseStudyGuide(false)
+        setSelectedGuideTopics([])
         fetchSets()
         router.push(`/quiz/${data.quizSet.id}`)
       } else {
@@ -373,6 +380,88 @@ export default function QuizPage() {
                     <span className="font-semibold">AP Exam Style</span>
                     <span className="text-xs text-muted-foreground block">Multiple choice with stimulus-based questions, modeled after the real AP exam format</span>
                   </label>
+                </div>
+              )}
+
+              {/* AP CSP Study Guide */}
+              {isAPCSP && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 rounded-lg border p-3 bg-cyan-50/50">
+                    <input
+                      type="checkbox"
+                      id="useStudyGuide"
+                      checked={useStudyGuide}
+                      onChange={(e) => {
+                        setUseStudyGuide(e.target.checked)
+                        if (!e.target.checked) setSelectedGuideTopics([])
+                      }}
+                      className="h-4 w-4 rounded border-gray-300"
+                    />
+                    <label htmlFor="useStudyGuide" className="text-sm cursor-pointer">
+                      <span className="font-semibold">Use AP CSP Study Guide</span>
+                      <span className="text-xs text-muted-foreground block">Generate from your teacher&apos;s exam review material (112 slides, all 5 Big Ideas)</span>
+                    </label>
+                  </div>
+
+                  {useStudyGuide && (
+                    <div className="space-y-2 pl-1">
+                      <Label>
+                        Select Big Ideas / Topics
+                        {selectedGuideTopics.length > 0 && (
+                          <span className="text-primary font-normal ml-1">({selectedGuideTopics.length} selected)</span>
+                        )}
+                        <span className="text-xs text-muted-foreground font-normal block">Leave empty to quiz on everything</span>
+                      </Label>
+                      <div className="space-y-2 max-h-[220px] overflow-y-auto rounded-lg border p-3">
+                        {AP_CSP_STUDY_GUIDE.map((section) => (
+                          <div key={section.bigIdea} className="space-y-1">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const sectionTopicIds = section.topics.map((t) => t.id)
+                                const allSelected = sectionTopicIds.every((id) => selectedGuideTopics.includes(id))
+                                setSelectedGuideTopics((prev) =>
+                                  allSelected
+                                    ? prev.filter((id) => !sectionTopicIds.includes(id))
+                                    : [...new Set([...prev, ...sectionTopicIds])]
+                                )
+                              }}
+                              className={cn(
+                                'w-full text-left rounded-md px-2 py-1.5 text-xs font-semibold transition-colors',
+                                section.topics.every((t) => selectedGuideTopics.includes(t.id))
+                                  ? 'bg-cyan-100 text-cyan-800'
+                                  : 'bg-muted/50 text-foreground hover:bg-muted'
+                              )}
+                            >
+                              Big Idea {section.bigIdea}: {section.title}
+                              <span className="text-[10px] font-normal text-muted-foreground ml-1">({section.examWeight})</span>
+                            </button>
+                            <div className="flex flex-wrap gap-1 pl-2">
+                              {section.topics.map((topic) => (
+                                <button
+                                  key={topic.id}
+                                  type="button"
+                                  onClick={() =>
+                                    setSelectedGuideTopics((prev) =>
+                                      prev.includes(topic.id) ? prev.filter((id) => id !== topic.id) : [...prev, topic.id]
+                                    )
+                                  }
+                                  className={cn(
+                                    'rounded-full px-2 py-0.5 text-[10px] font-medium transition-colors',
+                                    selectedGuideTopics.includes(topic.id)
+                                      ? 'bg-cyan-600 text-white'
+                                      : 'bg-muted text-muted-foreground hover:bg-accent'
+                                  )}
+                                >
+                                  {topic.id} {topic.name}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

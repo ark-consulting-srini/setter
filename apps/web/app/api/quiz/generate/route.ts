@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import type { GenerateQuizRequest, QuestionType } from '@setter/shared/types'
+import { getStudyGuideContent } from '@setter/shared/lib/ap-csp-study-guide'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
@@ -11,7 +12,7 @@ export async function POST(req: Request) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await req.json()
-  const { subject, topic, questionTypes, questionCount, difficulty, documentText, apExamStyle } = body as GenerateQuizRequest & { apExamStyle?: boolean }
+  const { subject, topic, questionTypes, questionCount, difficulty, documentText, apExamStyle, studyGuideTopicIds } = body as GenerateQuizRequest & { apExamStyle?: boolean; studyGuideTopicIds?: string[] }
 
   if (!subject || !questionTypes.length || questionCount < 1) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -21,8 +22,14 @@ export async function POST(req: Request) {
   const types = questionTypes.join(', ')
   const difficultyStr = difficulty ?? 'mixed'
 
-  const documentContext = documentText
-    ? `\n\nGenerate questions based on this study material:\n---\n${documentText.slice(0, 6000)}\n---`
+  // Build study material context — study guide content takes priority, then uploaded document
+  let studyMaterial = ''
+  if (studyGuideTopicIds?.length && subject === 'AP CSP') {
+    studyMaterial = getStudyGuideContent(studyGuideTopicIds)
+  }
+  const materialText = studyMaterial || (documentText ? documentText.slice(0, 6000) : '')
+  const documentContext = materialText
+    ? `\n\nGenerate questions based on this study material:\n---\n${materialText.slice(0, 12000)}\n---`
     : ''
 
   const apExamInstructions = apExamStyle ? `
@@ -110,7 +117,7 @@ Rules:
         user_id: user.id,
         title: parsed.title || `${subject} Quiz`,
         subject,
-        source_type: documentText ? 'from_document' : 'ai_generated',
+        source_type: studyGuideTopicIds?.length ? 'from_study_guide' : documentText ? 'from_document' : 'ai_generated',
         description: topic || null,
         question_count: parsed.questions.length,
       })
